@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DAVIS FABRICS — Nadgodziny 2026</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1a2e;
+      --line:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --shadow: 0 18px 40px rgba(0,0,0,.45);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --good:#1f8f4e; --bad:#c62828; --warn:#b78103;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 500px at 20% -10%, rgba(110,168,255,.22), transparent 60%),
+        radial-gradient(900px 400px at 90% 0%, rgba(255,210,110,.14), transparent 60%),
+        radial-gradient(900px 700px at 70% 110%, rgba(110,255,198,.10), transparent 65%),
+        var(--bg);
+    }
+    .wrap{max-width:none;width:100%;margin:0;padding:16px 16px 50px}
+    header{
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+      padding:18px 18px;
+      border:1px solid var(--line);
+      background:rgba(15,26,46,.96);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      position:sticky; top:10px; z-index:50;
+    }
+    .brand{display:flex; gap:14px; align-items:center;}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, rgba(110,168,255,.9), rgba(110,168,255,.15)),
+                  linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    .title h1{margin:0;font-size:16px;letter-spacing:.3px}
+    .title .sub{margin-top:3px;font-size:12px;color:var(--muted)}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end}
+    .pill{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+    }
+    select, button{
+      font:inherit; color:var(--text);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+    }
+    button{cursor:pointer}
+    .btn-primary{border-color: rgba(110,168,255,.40)}
+    .btn-danger{border-color: rgba(198,40,40,.40)}
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+      gap:14px; margin-top:14px; align-items:start;
+    }
+    .side,.main{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:rgba(15,26,46,.95);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .side{
+      position:sticky; top:96px;
+      height: calc(100vh - 120px);
+      display:flex; flex-direction:column;
+      z-index:20;
+    }
+    .side .section{padding:14px 14px; border-bottom:1px solid rgba(255,255,255,.10)}
+    .side .section:last-child{border-bottom:none}
+    .side h2{margin:0 0 8px; font-size:12px; color:var(--muted); letter-spacing:.4px; text-transform:uppercase}
+    .months{display:flex; flex-direction:column; gap:8px; max-height: 62vh; overflow:auto; padding-right:4px}
+    .mbtn{
+      width:100%; text-align:left;
+      padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+    }
+    .mbtn.active{border-color:rgba(110,168,255,.60); background:rgba(110,168,255,.14)}
+    .mmeta{font-size:12px;color:var(--muted)}
+    .badge{
+      font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      white-space:nowrap;
+    }
+    .badge.good{background:rgba(31,143,78,.22); border-color:rgba(31,143,78,.40)}
+    .badge.bad{background:rgba(198,40,40,.22); border-color:rgba(198,40,40,.40)}
+    .badge.warn{background:rgba(183,129,3,.22); border-color:rgba(183,129,3,.40)}
+    .statgrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .stat{padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05);}
+    .stat .k{font-size:12px;color:var(--muted)}
+    .stat .v{margin-top:6px;font-size:16px;font-family:var(--mono)}
+    .mainhead{padding:14px 14px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.18);}
+    .mainhead h3{margin:0;font-size:14px}
+
+    .tablewrap{padding:14px; width:100%}
+    .monthblock{border:1px solid rgba(255,255,255,.10); border-radius:14px; overflow:hidden; margin-bottom:14px}
+    .blockhead{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px;
+      background:rgba(255,255,255,.04);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:12px; color:var(--muted);
+    }
+    .blockhead b{color:var(--text)}
+    table{width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed}
+    thead th{
+      position:sticky; top:0; z-index:3;
+      background:rgba(15,26,46,.98);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.35px;
+      padding:8px 6px;
+      white-space:nowrap;
+    }
+    tbody td{border-bottom:1px solid rgba(255,255,255,.06); padding:6px 6px; vertical-align:middle;}
+    td.name{width:260px}
+    td.role{width:140px;color:var(--muted)}
+    .daycell{width:48px; min-width:48px; max-width:48px; padding:6px 4px}
+    .in{
+      width:100%;
+      text-align:center;
+      padding:7px 4px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      font-family:var(--mono);
+      font-size:12px;
+    }
+    .in:focus{border-color:rgba(110,168,255,.70); box-shadow:0 0 0 3px rgba(110,168,255,.22)}
+    .in[disabled]{opacity:.35}
+    .sum{font-family:var(--mono); font-size:12px; white-space:nowrap}
+    .status{font-weight:800; font-size:12px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); display:inline-flex;}
+    .status.good{background:rgba(31,143,78,.22); border-color:rgba(31,143,78,.40)}
+    .status.bad{background:rgba(198,40,40,.22); border-color:rgba(198,40,40,.40)}
+    .status.warn{background:rgba(183,129,3,.22); border-color:rgba(183,129,3,.40)}
+    .saldo{font-weight:900; padding:6px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.14); display:inline-block; min-width:70px; text-align:center;}
+    .saldo.good{background:rgba(31,143,78,.22); border-color:rgba(31,143,78,.40)}
+    .saldo.bad{background:rgba(198,40,40,.22); border-color:rgba(198,40,40,.40)}
+    .saldo.warn{background:rgba(183,129,3,.22); border-color:rgba(183,129,3,.40)}
+    .footer{margin-top:10px; padding:0 14px 14px; font-size:12px;color:var(--muted); display:flex; gap:10px; align-items:center; justify-content:space-between}
+    @media (max-width: 1100px){
+      .grid{grid-template-columns:1fr}
+      .side{position:relative; top:auto; height:auto}
+      header{position:relative; top:auto}
+      td.name{width:180px}
+    }
+      /* --- Admin (hasło + narzędzia) --- */
+    .modal{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:flex; align-items:center; justify-content:center;
+      z-index:200;
+    }
+    .modal-card{
+      width:min(640px, calc(100vw - 24px));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:rgba(15,26,46,.98);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .modal-head{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      padding:14px 14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+    }
+    .modal-title{font-weight:900; font-size:14px}
+    .modal-sub{margin-top:4px; font-size:12px; color:var(--muted)}
+    .modal-x{
+      border-radius:12px;
+      padding:8px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+    }
+    .modal-body{padding:14px}
+    .modal-label{display:block; font-size:12px; color:var(--muted); margin-bottom:8px}
+    .modal-input{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      outline:none;
+    }
+    .modal-input:focus{border-color:rgba(110,168,255,.70); box-shadow:0 0 0 3px rgba(110,168,255,.22)}
+    .modal-actions{
+      display:flex; gap:10px; justify-content:flex-end;
+      padding:14px;
+      border-top:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+    }
+    .modal-msg{
+      margin-top:10px;
+      font-size:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+    }
+    .modal-msg.bad{border-color:rgba(198,40,40,.40); background:rgba(198,40,40,.18)}
+    .modal-msg.good{border-color:rgba(31,143,78,.40); background:rgba(31,143,78,.18)}
+
+    .admin-grid{
+      display:grid;
+      grid-template-columns: 1fr 260px;
+      gap:10px 14px;
+      align-items:start;
+      margin-top:10px;
+    }
+    .admin-head{font-size:12px; color:var(--muted); padding:4px 2px}
+    .admin-list{display:flex; flex-direction:column; gap:8px}
+    .admin-row{
+      display:flex; gap:8px; align-items:center;
+      padding:8px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+    }
+    .admin-row input{
+      flex:1;
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.10);
+      color:var(--text);
+      outline:none;
+      min-width:0;
+    }
+    .admin-row input:focus{border-color:rgba(110,168,255,.70); box-shadow:0 0 0 3px rgba(110,168,255,.18)}
+    .admin-row button{padding:8px 10px; border-radius:12px}
+    .admin-actions-col{display:flex; flex-direction:column; gap:12px}
+    .admin-check{font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:center}
+    .admin-note{font-size:12px; color:var(--muted); padding:10px 12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)}
+
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="title">
+        <h1>DAVIS FABRICS — Nadgodziny / wyjścia wcześniejsze</h1>
+        <div class="sub">Wersja lokalna HTML • Rok <b id="yearLabel">2026</b> • Wpisuj np. <b>10</b> lub <b>-2</b> bez “uciekania” kursora</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="pill">
+        <span style="font-size:12px;color:var(--muted)">Widok:</span>
+        <select id="viewSel">
+          <option value="month">Miesiąc (edycja)</option>
+          <option value="summary">Podsumowanie 2026 (tylko odczyt)</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" id="saveBtn">Zapisz teraz</button>
+      <button id="adminBtn" type="button">Panel admina</button>
+      <button class="btn-danger" id="resetBtn" style="display:none">Reset (ten komputer)</button>
+      <button id="adminLogoutBtn" type="button" style="display:none">Wyloguj admina</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside class="side">
+      <div class="section">
+        <h2>Nawigacja</h2>
+        <div class="months" id="months"></div>
+      </div>
+
+      <div class="section">
+        <h2>Podgląd wybranego miesiąca</h2>
+        <div class="statgrid">
+          <div class="stat"><div class="k">Suma + (miesiąc)</div><div class="v" id="teamPlus">0.0</div></div>
+          <div class="stat"><div class="k">Suma - (miesiąc)</div><div class="v" id="teamMinus">0.0</div></div>
+          <div class="stat"><div class="k">Saldo (miesiąc)</div><div class="v" id="teamSaldo">0.0</div></div>
+          <div class="stat"><div class="k">Status (miesiąc)</div><div class="v" id="teamStatus">OK</div></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="mainhead">
+        <h3 id="mainTitle">Styczeń 2026</h3>
+        <div style="font-size:12px;color:var(--muted)">zielone: nadgodziny • czerwone: do odrobienia • żółte: OK</div>
+      </div>
+
+      <div class="tablewrap" id="tableWrap"></div>
+
+      <div class="footer">
+        <div>Dane zapisują się lokalnie w przeglądarce (localStorage). Kliknij “Zapisz teraz”.</div>
+        <div>© DAVIS FABRICS</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+  <div id="adminModal" class="modal" aria-hidden="true" style="display:none">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+      <div class="modal-head">
+        <div>
+          <div id="adminTitle" class="modal-title">Panel admina</div>
+          <div class="modal-sub">Dostęp do funkcji administracyjnych (ten komputer)</div>
+        </div>
+        <button id="adminCloseBtn" type="button" class="modal-x">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <label class="modal-label" for="adminPass">Hasło</label>
+        <input id="adminPass" class="modal-input" type="password" placeholder="Wpisz hasło…" autocomplete="current-password" />
+        <div id="adminMsg" class="modal-msg" style="display:none"></div>
+
+        <div id="adminTools" style="display:none; margin-top:14px">
+          <div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista w tym komputerze)</div>
+
+          <div class="admin-grid">
+            <div class="admin-head">Pracownicy</div>
+            <div class="admin-head">Akcje</div>
+
+            <div id="adminEmpList" class="admin-list"></div>
+            <div class="admin-actions-col">
+              <div class="admin-add">
+                <input id="adminEmpAdd" class="modal-input" type="text" placeholder="Dodaj: Imię Nazwisko" />
+                <button id="adminEmpAddBtn" type="button" class="btn-primary" style="margin-top:8px">Dodaj</button>
+              </div>
+
+              <label class="admin-check">
+                <input id="adminRemoveDataChk" type="checkbox" />
+                Usuń też dane (cały rok) przy usuwaniu
+              </label>
+
+              <div class="admin-note">
+                <b>Edycja</b> przenosi dane starej osoby na nową nazwę (migracja całego roku).
+              </div>
+              <button id="adminResetBtn" type="button" class="btn-danger">Reset (ten komputer)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="adminLoginBtn" type="button" class="btn-primary">Zaloguj</button>
+        <button id="adminCancelBtn" type="button">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="./firebase_config.js"></script>
+<script>
+
+(() => {
+  const YEAR = 2026;
+  const monthNames = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+  const DB_PATH = `davis/nadgodziny/${YEAR}/app`;
+
+  // ====== Inject Firebase login modal (reuse existing modal styles) ======
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="firebaseAuthModal" class="modal" aria-hidden="false" style="display:flex">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="fbAuthTitle">
+        <div class="modal-head">
+          <div>
+            <div id="fbAuthTitle" class="modal-title">Logowanie do wspólnej bazy</div>
+            <div class="modal-sub">Zaloguj się kontem działu (Firebase), aby odczytywać i zapisywać dane online</div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <label class="modal-label" for="fbEmail">E-mail</label>
+          <input id="fbEmail" class="modal-input" type="email" autocomplete="username" placeholder="np. marketing@..." />
+          <label class="modal-label" for="fbPass" style="margin-top:10px">Hasło</label>
+          <input id="fbPass" class="modal-input" type="password" autocomplete="current-password" placeholder="Hasło konta działu" />
+          <div id="fbAuthMsg" class="modal-msg" style="display:none"></div>
+        </div>
+        <div class="modal-actions">
+          <button id="fbLoginBtn" type="button" class="btn-primary">Zaloguj</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  const defaultEmployees = [
+    "Anita Kos",
+    "Anita Bucka",
+    "Joanna Knycz",
+    "Agnieszka Panek",
+    "Marta Bogusz",
+    "Rafał Kukla",
+    "Maria Halotta",
+    "Zuzanna Jadczyk",
+    "Hania Danielczyk",
+  ];
+
+  const els = {
+    months: document.getElementById('months'),
+    mainTitle: document.getElementById('mainTitle'),
+    tableWrap: document.getElementById('tableWrap'),
+    viewSel: document.getElementById('viewSel'),
+    yearLabel: document.getElementById('yearLabel'),
+    saveBtn: document.getElementById('saveBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    adminBtn: document.getElementById('adminBtn'),
+    adminLogoutBtn: document.getElementById('adminLogoutBtn'),
+    adminModal: document.getElementById('adminModal'),
+    adminPass: document.getElementById('adminPass'),
+    adminMsg: document.getElementById('adminMsg'),
+    adminLoginBtn: document.getElementById('adminLoginBtn'),
+    adminCancelBtn: document.getElementById('adminCancelBtn'),
+    adminCloseBtn: document.getElementById('adminCloseBtn'),
+    adminTools: document.getElementById('adminTools'),
+    adminEmpList: document.getElementById('adminEmpList'),
+    adminEmpAdd: document.getElementById('adminEmpAdd'),
+    adminEmpAddBtn: document.getElementById('adminEmpAddBtn'),
+    adminRemoveDataChk: document.getElementById('adminRemoveDataChk'),
+    adminResetBtn: document.getElementById('adminResetBtn'),
+    teamPlus: document.getElementById('teamPlus'),
+    teamMinus: document.getElementById('teamMinus'),
+    teamSaldo: document.getElementById('teamSaldo'),
+    teamStatus: document.getElementById('teamStatus'),
+    fbAuthModal: document.getElementById('firebaseAuthModal'),
+    fbEmail: document.getElementById('fbEmail'),
+    fbPass: document.getElementById('fbPass'),
+    fbAuthMsg: document.getElementById('fbAuthMsg'),
+    fbLoginBtn: document.getElementById('fbLoginBtn'),
+  };
+
+  // ====== UI copy tweaks (online/shared version) ======
+  els.yearLabel.textContent = YEAR;
+  const subEl = document.querySelector('.title .sub');
+  if (subEl) {
+    subEl.innerHTML = `Wersja online (Firebase) • Rok <b>${YEAR}</b> • Wspólny zapis/odczyt dla całego działu`;
+  }
+  const footerLeft = document.querySelector('.footer > div:first-child');
+  if (footerLeft) {
+    footerLeft.textContent = "Dane zapisują się we wspólnej bazie Firebase. Wpisy po zapisie są widoczne dla wszystkich.";
+  }
+  const adminSubEl = document.querySelector('#adminModal .modal-sub');
+  if (adminSubEl) adminSubEl.textContent = "Funkcje administracyjne (wspólna baza online)";
+  const adminToolsSub = document.querySelector('#adminTools .modal-sub');
+  if (adminToolsSub) adminToolsSub.textContent = "Zarządzanie pracownikami (lista wspólna dla wszystkich)";
+  if (els.adminResetBtn) els.adminResetBtn.textContent = "Reset (wszyscy użytkownicy)";
+
+  // Add cloud status + logout button in toolbar
+  const toolbar = document.querySelector('.toolbar');
+  let cloudBadge = null;
+  let accountBtn = null;
+  if (toolbar) {
+    cloudBadge = document.createElement('div');
+    cloudBadge.className = 'pill';
+    cloudBadge.style.fontSize = '12px';
+    cloudBadge.style.color = 'var(--muted)';
+    cloudBadge.id = 'cloudBadge';
+    cloudBadge.textContent = 'Chmura: brak logowania';
+    toolbar.insertBefore(cloudBadge, els.saveBtn);
+
+    accountBtn = document.createElement('button');
+    accountBtn.type = 'button';
+    accountBtn.id = 'accountLogoutBtn';
+    accountBtn.textContent = 'Wyloguj konto';
+    accountBtn.style.display = 'none';
+    toolbar.appendChild(accountBtn);
+  }
+
+  // ====== Helpers ======
+  function sortEmployees(list){
+    return (list||[])
+      .map(s=>String(s||"").trim())
+      .filter(Boolean)
+      .slice()
+      .sort((a,b)=>{
+        const as=a.trim().split(/\s+/), bs=b.trim().split(/\s+/);
+        const al=as[as.length-1].toLocaleLowerCase('pl');
+        const bl=bs[bs.length-1].toLocaleLowerCase('pl');
+        if(al!==bl) return al.localeCompare(bl,'pl');
+        return a.localeCompare(b,'pl');
+      });
+  }
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  function weekdayPL(y,m,d){
+    const wd = new Date(y, m-1, d).getDay();
+    return ["Nd","Pn","Wt","Śr","Cz","Pt","So"][wd];
+  }
+  function parseNum(val){
+    if(val==null) return 0;
+    let s = String(val).trim();
+    if(!s) return 0;
+    s = s.replace(',', '.');
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function fmt(n){ return (Math.round(n*10)/10).toFixed(1); }
+  function statusFromSaldo(s){ return s>0 ? "Nadgodziny" : (s<0 ? "Do odrobienia" : "OK"); }
+  function clsFromStatus(st){ return st==="Nadgodziny" ? "good" : (st==="Do odrobienia" ? "bad" : "warn"); }
+  function cssEscape(s){
+    if(window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/["\\]/g, "\\$&");
+  }
+  function showToast(msg, ok=true){
+    if (cloudBadge) {
+      cloudBadge.textContent = `Chmura: ${msg}`;
+      cloudBadge.style.color = ok ? 'rgba(255,255,255,.92)' : '#ffd0d0';
+    }
+  }
+
+  function defaultState(){
+    const employees = sortEmployees(defaultEmployees);
+    const s = { year: YEAR, updatedAt: Date.now(), employees, months: {} };
+    for(let m=1;m<=12;m++){
+      s.months[m] = {};
+      for(const emp of employees){
+        s.months[m][emp] = Array(31).fill("");
+      }
+    }
+    return s;
+  }
+
+  function normalizeState(remoteObj){
+    const base = defaultState();
+    const obj = (remoteObj && typeof remoteObj === 'object') ? remoteObj : {};
+    const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(obj.employees) : base.employees.slice();
+
+    const out = {
+      year: YEAR,
+      updatedAt: Number(obj.updatedAt) || Date.now(),
+      employees: emps,
+      months: {}
+    };
+
+    for(let m=1;m<=12;m++){
+      out.months[m] = {};
+      const remoteMonth = (obj.months && obj.months[m]) ? obj.months[m] : {};
+      for (const emp of emps) {
+        const arr = Array.isArray(remoteMonth[emp]) ? remoteMonth[emp].slice(0,31) : [];
+        while (arr.length < 31) arr.push("");
+        out.months[m][emp] = arr.map(v => (v == null ? "" : String(v)));
+      }
+    }
+    return out;
+  }
+
+  let state = defaultState();
+  let employees = state.employees.slice();
+  let currentMonth = 1;
+  let currentView = "month";
+
+  // ====== Firebase ======
+  let app = null;
+  let auth = null;
+  let db = null;
+  let dbRef = null;
+  let dbListener = null;
+  let currentUser = null;
+  let pendingRemote = null;
+  let saveTimer = null;
+  let remoteReady = false;
+
+  function fbConfigReady(cfg){
+    if (!cfg || typeof cfg !== 'object') return false;
+    const req = ['apiKey','authDomain','projectId','appId','databaseURL'];
+    return req.every(k => typeof cfg[k] === 'string' && cfg[k].trim());
+  }
+
+  function showAuthMsg(text, ok){
+    if (!els.fbAuthMsg) return;
+    els.fbAuthMsg.textContent = text;
+    els.fbAuthMsg.className = 'modal-msg ' + (ok ? 'good' : 'bad');
+    els.fbAuthMsg.style.display = '';
+  }
+  function hideAuthMsg(){
+    if (!els.fbAuthMsg) return;
+    els.fbAuthMsg.style.display = 'none';
+    els.fbAuthMsg.className = 'modal-msg';
+    els.fbAuthMsg.textContent = '';
+  }
+  function showAuthModal(){
+    if (els.fbAuthModal) {
+      els.fbAuthModal.style.display = 'flex';
+      els.fbAuthModal.setAttribute('aria-hidden', 'false');
+    }
+    if (els.fbEmail) setTimeout(()=>els.fbEmail.focus(), 50);
+  }
+  function hideAuthModal(){
+    if (els.fbAuthModal) {
+      els.fbAuthModal.style.display = 'none';
+      els.fbAuthModal.setAttribute('aria-hidden', 'true');
+    }
+    hideAuthMsg();
+  }
+
+  function initFirebase(){
+    if (!window.firebase) {
+      showAuthModal();
+      showAuthMsg('Nie wczytano bibliotek Firebase (sprawdź internet i pliki).', false);
+      showToast('błąd bibliotek', false);
+      return;
+    }
+    const cfg = window.FIREBASE_CONFIG;
+    if (!fbConfigReady(cfg)) {
+      showAuthModal();
+      showAuthMsg('Uzupełnij plik firebase_config.js (apiKey, authDomain, projectId, appId, databaseURL).', false);
+      showToast('brak konfiguracji', false);
+      return;
+    }
+
+    try {
+      if (!firebase.apps.length) app = firebase.initializeApp(cfg);
+      else app = firebase.app();
+      auth = firebase.auth();
+      db = firebase.database();
+
+      dbRef = db.ref(DB_PATH);
+
+      auth.onAuthStateChanged((user) => {
+        currentUser = user || null;
+        if (currentUser) {
+          remoteReady = true;
+          hideAuthModal();
+          if (accountBtn) accountBtn.style.display = '';
+          subscribeRemote();
+          showToast(`połączono (${currentUser.email || 'konto'})`, true);
+        } else {
+          remoteReady = false;
+          detachRemote();
+          if (accountBtn) accountBtn.style.display = 'none';
+          showAuthModal();
+          showToast('zaloguj się', false);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      showAuthModal();
+      showAuthMsg(`Błąd inicjalizacji Firebase: ${e.message || e}`, false);
+      showToast('błąd Firebase', false);
+    }
+  }
+
+  function detachRemote(){
+    if (dbRef && dbListener) {
+      dbRef.off('value', dbListener);
+    }
+    dbListener = null;
+    pendingRemote = null;
+  }
+
+  function isEditingCell(){
+    const a = document.activeElement;
+    return !!(a && a.classList && a.classList.contains('in'));
+  }
+
+  function applyRemoteData(raw, silent=false){
+    state = normalizeState(raw);
+    employees = state.employees.slice();
+    render();
+    if (isAdmin()) renderAdminEmployees();
+    if (!silent) {
+      const stamp = new Date(state.updatedAt || Date.now());
+      showToast(`zsynchronizowano ${stamp.toLocaleTimeString('pl-PL')}`, true);
+    }
+  }
+
+  function subscribeRemote(){
+    if (!dbRef || !currentUser) return;
+    detachRemote();
+    dbListener = (snap) => {
+      const val = snap.val();
+      const normalized = normalizeState(val);
+      if (isEditingCell()) {
+        pendingRemote = normalized;
+        return;
+      }
+      applyRemoteData(normalized, true);
+    };
+    dbRef.on('value', dbListener, (err) => {
+      console.error(err);
+      showToast('błąd odczytu', false);
+      alert('Błąd odczytu z Firebase: ' + (err.message || err));
+    });
+  }
+
+  function cloneForSave(){
+    // Deep clone to plain JSON
+    return {
+      year: YEAR,
+      updatedAt: Date.now(),
+      employees: employees.slice(),
+      months: JSON.parse(JSON.stringify(state.months || {}))
+    };
+  }
+
+  function saveRemote(showAlert=false){
+    if (!dbRef || !currentUser) {
+      showAuthModal();
+      showAuthMsg('Najpierw zaloguj się do Firebase.', false);
+      return Promise.reject(new Error('Not authenticated'));
+    }
+    const payload = cloneForSave();
+    state.updatedAt = payload.updatedAt;
+    state.employees = employees.slice();
+
+    showToast('zapis…', true);
+    return dbRef.set(payload)
+      .then(() => {
+        if (showAlert) alert('Zapisano do chmury ✅');
+        showToast('zapisano', true);
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast('błąd zapisu', false);
+        alert('Błąd zapisu do Firebase: ' + (err.message || err));
+        throw err;
+      });
+  }
+
+  function queueSave(delay=700){
+    if (!remoteReady || !currentUser) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveRemote(false).catch(()=>{}); }, delay);
+  }
+
+  // ====== Admin panel (local password, shared data) ======
+  const ADMIN_PASS = "@Marketing1234";
+  const adminKey = `davis_admin_${YEAR}_v1`; // sessionStorage: tylko ta karta
+
+  function isAdmin(){
+    return sessionStorage.getItem(adminKey) === "1";
+  }
+  function setAdmin(on){
+    if(on) sessionStorage.setItem(adminKey, "1");
+    else sessionStorage.removeItem(adminKey);
+    refreshAdminUI();
+  }
+  function refreshAdminUI(){
+    const on = isAdmin();
+    if(els.resetBtn) els.resetBtn.style.display = on ? "" : "none";
+    if(els.adminLogoutBtn) els.adminLogoutBtn.style.display = on ? "" : "none";
+    if(els.adminTools) els.adminTools.style.display = on ? "" : "none";
+  }
+  function showAdminMsg(text, ok){
+    if(!els.adminMsg) return;
+    els.adminMsg.textContent = text;
+    els.adminMsg.className = "modal-msg " + (ok ? "good" : "bad");
+    els.adminMsg.style.display = "";
+  }
+  function openAdminModal(){
+    if(!els.adminModal) return;
+    if(els.adminMsg){ els.adminMsg.style.display = "none"; els.adminMsg.className="modal-msg"; }
+    if(els.adminPass) els.adminPass.value = "";
+    els.adminModal.style.display = "flex";
+    els.adminModal.setAttribute("aria-hidden", "false");
+    refreshAdminUI();
+    if(isAdmin()){
+      renderAdminEmployees();
+    }else{
+      setTimeout(()=>{ if(els.adminPass) els.adminPass.focus(); }, 50);
+    }
+  }
+  function closeAdminModal(){
+    if(!els.adminModal) return;
+    els.adminModal.style.display = "none";
+    els.adminModal.setAttribute("aria-hidden", "true");
+  }
+
+  function renderAdminEmployees(){
+    if(!els.adminEmpList) return;
+    els.adminEmpList.innerHTML = "";
+    employees.forEach((emp)=>{
+      const row = document.createElement('div');
+      row.className = 'admin-row';
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = emp;
+      inp.setAttribute('data-old', emp);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.className = 'btn-primary';
+      saveBtn.textContent = 'Zapisz';
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn-danger';
+      delBtn.textContent = 'Usuń';
+
+      saveBtn.addEventListener('click', async ()=>{
+        if(!isAdmin()) return;
+        const oldName = inp.getAttribute('data-old');
+        const newName = (inp.value || "").trim();
+        if(!newName){ showAdminMsg("Nazwa nie może być pusta.", false); inp.value = oldName; return; }
+        if(newName === oldName){ showAdminMsg("Brak zmian.", true); return; }
+        if(employees.includes(newName)){ showAdminMsg("Taka osoba już istnieje.", false); inp.value = oldName; return; }
+
+        employees = sortEmployees(employees.filter(x=>x!==oldName).concat([newName]));
+        state.employees = employees.slice();
+
+        for(let m=1;m<=12;m++){
+          if(!state.months[m]) state.months[m] = {};
+          if(state.months[m][oldName]){
+            state.months[m][newName] = state.months[m][oldName];
+            delete state.months[m][oldName];
+          } else if(!state.months[m][newName]){
+            state.months[m][newName] = Array(31).fill("");
+          }
+          // cleanup names not on list
+          Object.keys(state.months[m]).forEach(n => { if (!employees.includes(n)) delete state.months[m][n]; });
+        }
+
+        render();
+        renderAdminEmployees();
+        showAdminMsg("Zmieniono nazwę i przeniesiono dane ✅", true);
+        await saveRemote(false).catch(()=>{});
+      });
+
+      delBtn.addEventListener('click', async ()=>{
+        if(!isAdmin()) return;
+        const name = inp.getAttribute('data-old');
+        if(!confirm(`Usunąć z listy: ${name}?`)) return;
+
+        const removeData = !!(els.adminRemoveDataChk && els.adminRemoveDataChk.checked);
+
+        employees = employees.filter(x=>x!==name);
+        if (!employees.length) {
+          showAdminMsg("Lista nie może być pusta.", false);
+          employees = [name];
+          return;
+        }
+        state.employees = employees.slice();
+
+        for(let m=1;m<=12;m++){
+          if(!state.months[m]) state.months[m] = {};
+          if(removeData){
+            delete state.months[m][name];
+          } else {
+            // zachowujemy dane tylko jeśli pracownik wróci później -> przenosimy do archiwum nie robimy
+            delete state.months[m][name];
+          }
+          for (const emp of employees){
+            if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill("");
+          }
+        }
+
+        render();
+        renderAdminEmployees();
+        showAdminMsg(removeData ? "Usunięto osobę i jej dane ✅" : "Usunięto osobę z listy ✅", true);
+        await saveRemote(false).catch(()=>{});
+      });
+
+      row.appendChild(inp);
+      row.appendChild(saveBtn);
+      row.appendChild(delBtn);
+      els.adminEmpList.appendChild(row);
+    });
+  }
+
+  // admin actions
+  if(els.adminBtn) els.adminBtn.addEventListener('click', openAdminModal);
+  if(els.adminLogoutBtn) els.adminLogoutBtn.addEventListener('click', ()=> setAdmin(false));
+  if(els.adminCloseBtn) els.adminCloseBtn.addEventListener('click', closeAdminModal);
+  if(els.adminCancelBtn) els.adminCancelBtn.addEventListener('click', closeAdminModal);
+
+  if(els.adminResetBtn){
+    els.adminResetBtn.addEventListener('click', async ()=>{
+      if(!isAdmin()) return;
+      if(confirm("Na pewno wyczyścić WSZYSTKIE dane w chmurze dla całego działu?")){
+        state = defaultState();
+        employees = state.employees.slice();
+        render();
+        try {
+          await saveRemote(false);
+          showAdminMsg("Wyczyszczono dane w chmurze ✅", true);
+        } catch(e) {
+          showAdminMsg("Błąd resetu w chmurze.", false);
+        }
+      }
+    });
+  }
+
+  if(els.adminEmpAddBtn){
+    els.adminEmpAddBtn.addEventListener('click', async ()=>{
+      if(!isAdmin()) return;
+      const name = (els.adminEmpAdd.value || "").trim();
+      if(!name){ showAdminMsg("Wpisz imię i nazwisko.", false); return; }
+      if(employees.includes(name)){ showAdminMsg("Taka osoba już istnieje.", false); return; }
+
+      employees = sortEmployees(employees.concat([name]));
+      state.employees = employees.slice();
+      for(let m=1;m<=12;m++){
+        if(!state.months[m]) state.months[m] = {};
+        if(!state.months[m][name]) state.months[m][name] = Array(31).fill("");
+      }
+
+      render();
+      els.adminEmpAdd.value = "";
+      renderAdminEmployees();
+      showAdminMsg("Dodano pracownika ✅", true);
+      await saveRemote(false).catch(()=>{});
+    });
+  }
+
+  if(els.adminLoginBtn){
+    els.adminLoginBtn.addEventListener('click', ()=>{
+      const p = (els.adminPass.value || "").trim();
+      if(p === ADMIN_PASS){
+        setAdmin(true);
+        renderAdminEmployees();
+        showAdminMsg("Zalogowano ✅", true);
+      }else{
+        showAdminMsg("Błędne hasło.", false);
+        if(els.adminPass){ els.adminPass.focus(); els.adminPass.select(); }
+      }
+    });
+  }
+
+  if(els.adminPass){
+    els.adminPass.addEventListener('keydown', (e)=>{
+      if(e.key === "Enter" && els.adminLoginBtn) els.adminLoginBtn.click();
+      if(e.key === "Escape") closeAdminModal();
+    });
+  }
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === "Escape" && els.adminModal && els.adminModal.style.display === "flex") closeAdminModal();
+  });
+
+  // Firebase auth login actions
+  if (els.fbLoginBtn) {
+    els.fbLoginBtn.addEventListener('click', async () => {
+      if (!auth) {
+        initFirebase();
+        return;
+      }
+      const email = (els.fbEmail?.value || '').trim();
+      const pass = (els.fbPass?.value || '').trim();
+      if (!email || !pass) {
+        showAuthMsg('Wpisz e-mail i hasło.', false);
+        return;
+      }
+      hideAuthMsg();
+      els.fbLoginBtn.disabled = true;
+      els.fbLoginBtn.textContent = 'Logowanie…';
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch (e) {
+        console.error(e);
+        showAuthMsg(`Błąd logowania: ${e.message || e}`, false);
+      } finally {
+        els.fbLoginBtn.disabled = false;
+        els.fbLoginBtn.textContent = 'Zaloguj';
+      }
+    });
+  }
+  if (els.fbEmail) {
+    [els.fbEmail, els.fbPass].forEach(inp => {
+      if (!inp) return;
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && els.fbLoginBtn) els.fbLoginBtn.click();
+      });
+    });
+  }
+  if (accountBtn) {
+    accountBtn.addEventListener('click', async () => {
+      if (!auth) return;
+      try {
+        await auth.signOut();
+      } catch (e) {
+        alert('Błąd wylogowania: ' + (e.message || e));
+      }
+    });
+  }
+
+  function monthTeamTotals(m){
+    let plus=0, minus=0, saldo=0;
+    for(const emp of employees){
+      const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
+      const dim = daysInMonth(YEAR,m);
+      for(let d=1; d<=dim; d++){
+        const v = parseNum(arr[d-1]);
+        if(v>0) plus += v;
+        if(v<0) minus += (-v);
+        saldo += v;
+      }
+    }
+    return { plus, minus, saldo, status: statusFromSaldo(saldo) };
+  }
+
+  function yearTotalsForEmp(emp){
+    let plus=0, minus=0, saldo=0;
+    for(let m=1;m<=12;m++){
+      const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
+      const dim = daysInMonth(YEAR,m);
+      for(let d=1; d<=dim; d++){
+        const v = parseNum(arr[d-1]);
+        if(v>0) plus += v;
+        if(v<0) minus += (-v);
+        saldo += v;
+      }
+    }
+    return { plus, minus, saldo, status: statusFromSaldo(saldo) };
+  }
+
+  function buildMonths(){
+    els.months.innerHTML = "";
+    for(let m=1;m<=12;m++){
+      const t = monthTeamTotals(m);
+      const btn = document.createElement('button');
+      btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"");
+      btn.type="button";
+      btn.innerHTML = `
+        <div>
+          <div><b>${monthNames[m-1]}</b> <span class="mmeta">${YEAR}</span></div>
+          <div class="mmeta">Saldo zespołu: ${fmt(t.saldo)}</div>
+        </div>
+        <span class="badge ${clsFromStatus(t.status)}">${t.status}</span>
+      `;
+      btn.addEventListener('click', ()=>{
+        currentMonth = m;
+        currentView = "month";
+        els.viewSel.value = "month";
+        render();
+      });
+      els.months.appendChild(btn);
+    }
+  }
+
+  function setMonthPreview(){
+    const t = monthTeamTotals(currentMonth);
+    els.teamPlus.textContent = fmt(t.plus);
+    els.teamMinus.textContent = fmt(t.minus);
+    els.teamSaldo.textContent = fmt(t.saldo);
+    els.teamStatus.textContent = t.status;
+  }
+
+  function calcMonthTotalsForEmp(m, emp){
+    const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
+    const dim = daysInMonth(YEAR,m);
+    let plus=0, minus=0, saldo=0;
+    for(let d=1; d<=dim; d++){
+      const v=parseNum(arr[d-1]);
+      if(v>0) plus+=v;
+      if(v<0) minus+=(-v);
+      saldo+=v;
+    }
+    const st=statusFromSaldo(saldo);
+    return {plus, minus, saldo, status:st, cls:clsFromStatus(st)};
+  }
+
+  function renderMonth(){
+    const m = currentMonth;
+    const dim = daysInMonth(YEAR,m);
+    els.mainTitle.textContent = `${monthNames[m-1]} ${YEAR}`;
+    setMonthPreview();
+
+    const blocks = [
+      {label:`Dni 1–16`, start:1, end:16},
+      {label:`Dni 17–31`, start:17, end:31},
+    ];
+
+    const host = document.createElement('div');
+
+    for(const block of blocks){
+      const mb = document.createElement('div');
+      mb.className = "monthblock";
+
+      const bh = document.createElement('div');
+      bh.className = "blockhead";
+      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b></div><div>zapis do chmury po wyjściu z pola</div>`;
+      mb.appendChild(bh);
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tr1 = document.createElement('tr');
+
+      const thName = document.createElement('th'); thName.textContent="Imię i nazwisko"; tr1.appendChild(thName);
+
+      for(let d=block.start; d<=block.end; d++){
+        const th=document.createElement('th');
+        th.textContent=d;
+        tr1.appendChild(th);
+      }
+      ["Suma +","Suma -","Saldo","Status"].forEach(t=>{
+        const th=document.createElement('th'); th.textContent=t; tr1.appendChild(th);
+      });
+
+      thead.appendChild(tr1);
+
+      const tr2 = document.createElement('tr');
+      tr2.appendChild(document.createElement('th'));
+      for(let d=block.start; d<=block.end; d++){
+        const th=document.createElement('th');
+        th.textContent = (d<=dim) ? weekdayPL(YEAR,m,d) : "—";
+        tr2.appendChild(th);
+      }
+      tr2.appendChild(document.createElement('th'));
+      tr2.appendChild(document.createElement('th'));
+      thead.appendChild(tr2);
+
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      for(const emp of employees){
+        const tr=document.createElement('tr');
+        tr.setAttribute("data-emp", emp);
+        tr.setAttribute("data-month", String(m));
+
+        const tdName=document.createElement('td'); tdName.className="name"; tdName.innerHTML=`<b>${emp}</b>`; tr.appendChild(tdName);
+
+        if (!state.months[m]) state.months[m] = {};
+        if (!state.months[m][emp]) state.months[m][emp] = Array(31).fill("");
+        const arr = state.months[m][emp];
+
+        for(let d=block.start; d<=block.end; d++){
+          const td=document.createElement('td'); td.className="daycell";
+          const input=document.createElement('input');
+          input.className="in";
+          input.inputMode="decimal";
+          input.value = arr[d-1] ?? "";
+          input.disabled = d>dim;
+
+          input.addEventListener('input', ()=>{
+            arr[d-1] = input.value.replace(',', '.');
+            const t = calcMonthTotalsForEmp(m, emp);
+            document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
+              row.querySelector('[data-role="plus"]').textContent = fmt(t.plus);
+              row.querySelector('[data-role="minus"]').textContent = fmt(t.minus);
+              row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
+              row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
+            });
+            buildMonths();
+            setMonthPreview();
+            queueSave(1200);
+          });
+
+          input.addEventListener('blur', ()=>{
+            let v = (input.value || "").trim().replace(',', '.');
+            if(v === "-" || v === "+") v = "";
+            // sanitize invalid junk
+            if(v && !/^[+-]?\d+(\.\d+)?$/.test(v)) {
+              v = "";
+            }
+            input.value = v;
+            arr[d-1] = v;
+            buildMonths();
+            setMonthPreview();
+            saveRemote(false).catch(()=>{});
+            if (pendingRemote && !isEditingCell()) {
+              const pr = pendingRemote; pendingRemote = null;
+              applyRemoteData(pr, true);
+            }
+          });
+
+          td.appendChild(input);
+          tr.appendChild(td);
+        }
+
+        const t = calcMonthTotalsForEmp(m, emp);
+
+        const tdPlus=document.createElement('td'); tdPlus.className="sum"; tdPlus.dataset.role="plus"; tdPlus.textContent=fmt(t.plus); tr.appendChild(tdPlus);
+        const tdMinus=document.createElement('td'); tdMinus.className="sum"; tdMinus.dataset.role="minus"; tdMinus.textContent=fmt(t.minus); tr.appendChild(tdMinus);
+        const tdSaldo=document.createElement('td'); tdSaldo.className="sum"; tdSaldo.dataset.role="saldo"; tdSaldo.innerHTML=`<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`; tr.appendChild(tdSaldo);
+        const tdStatus=document.createElement('td'); tdStatus.className="sum"; tdStatus.dataset.role="status"; tdStatus.innerHTML=`<span class="status ${t.cls}">${t.status}</span>`; tr.appendChild(tdStatus);
+
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      mb.appendChild(table);
+      host.appendChild(mb);
+    }
+
+    els.tableWrap.innerHTML="";
+    els.tableWrap.appendChild(host);
+  }
+
+  function renderSummary(){
+    els.mainTitle.textContent = `Podsumowanie ${YEAR}`;
+    setMonthPreview();
+
+    const mb = document.createElement('div');
+    mb.className="monthblock";
+    const bh = document.createElement('div');
+    bh.className="blockhead";
+    bh.innerHTML = `<div><b>Podsumowanie roczne</b> • tylko odczyt</div><div>status z salda</div>`;
+    mb.appendChild(bh);
+
+    const table=document.createElement('table');
+    const thead=document.createElement('thead');
+    const tr1=document.createElement('tr');
+    ["Imię i nazwisko","Suma + (rok)","Suma - (rok)","Saldo (rok)","Status (rok)"].forEach(t=>{
+      const th=document.createElement('th'); th.textContent=t; tr1.appendChild(th);
+    });
+    thead.appendChild(tr1);
+    table.appendChild(thead);
+
+    const tbody=document.createElement('tbody');
+    for(const emp of employees){
+      const t=yearTotalsForEmp(emp);
+      const cls=clsFromStatus(t.status);
+
+      const tr=document.createElement('tr');
+      const td1=document.createElement('td'); td1.className="name"; td1.innerHTML=`<b>${emp}</b>`; tr.appendChild(td1);
+      const td3=document.createElement('td'); td3.className="sum"; td3.textContent=fmt(t.plus); tr.appendChild(td3);
+      const td4=document.createElement('td'); td4.className="sum"; td4.textContent=fmt(t.minus); tr.appendChild(td4);
+      const td5=document.createElement('td'); td5.className="sum"; td5.innerHTML=`<span class="saldo ${cls}">${fmt(t.saldo)}</span>`; tr.appendChild(td5);
+      const td6=document.createElement('td'); td6.className="sum"; td6.innerHTML=`<span class="status ${cls}">${t.status}</span>`; tr.appendChild(td6);
+
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    mb.appendChild(table);
+
+    els.tableWrap.innerHTML="";
+    els.tableWrap.appendChild(mb);
+  }
+
+  function render(){
+    buildMonths();
+    if(currentView==="month") renderMonth();
+    else renderSummary();
+  }
+
+  els.viewSel.addEventListener('change', ()=>{
+    currentView = els.viewSel.value;
+    render();
+  });
+
+  els.saveBtn.addEventListener('click', ()=>{ saveRemote(true).catch(()=>{}); });
+
+  els.resetBtn.addEventListener('click', async ()=>{
+    if(!isAdmin()){
+      openAdminModal();
+      showAdminMsg("Najpierw zaloguj się jako admin.", false);
+      return;
+    }
+    if(confirm("Na pewno wyczyścić WSZYSTKIE dane w chmurze dla całego działu?")){
+      state = defaultState();
+      employees = state.employees.slice();
+      render();
+      try {
+        await saveRemote(false);
+        alert("Wyczyszczono dane w chmurze ✅");
+      } catch(e) {}
+    }
+  });
+
+  render();
+  refreshAdminUI();
+  initFirebase();
+})();
+
+</script>
+
+</body>
+</html>
