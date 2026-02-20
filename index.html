@@ -67,32 +67,30 @@
     .btn-primary{border-color: rgba(110,168,255,.40)}
     .btn-danger{border-color: rgba(198,40,40,.40)}
     .grid{
-      display:grid;
-      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
-      gap:14px; margin-top:14px; align-items:start;
+      display:block;
+      margin-top:14px;
     }
-    .side,.main{
+    .main{
       border:1px solid var(--line);
       border-radius:var(--radius);
       background:rgba(15,26,46,.95);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-    .side{
-      position:sticky; top:96px;
-      height: calc(100vh - 120px);
-      display:flex; flex-direction:column;
-      z-index:20;
-    }
-    .side .section{padding:14px 14px; border-bottom:1px solid rgba(255,255,255,.10)}
-    .side .section:last-child{border-bottom:none}
-    .side h2{margin:0 0 8px; font-size:12px; color:var(--muted); letter-spacing:.4px; text-transform:uppercase}
-    .months{display:flex; flex-direction:column; gap:8px; max-height: 62vh; overflow:auto; padding-right:4px}
+    .side{display:none !important}
+    .months-panel{padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.02)}
+    .months-panel details{border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03); padding:8px 10px}
+    .months-panel summary{cursor:pointer; list-style:none; font-size:12px; color:var(--muted); user-select:none}
+    .months-panel summary::-webkit-details-marker{display:none}
+    .months-panel summary::before{content:'▸'; margin-right:8px; color:var(--text)}
+    .months-panel details[open] summary::before{content:'▾'}
+    .months{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:10px; max-height:none; overflow:visible; padding-right:0}
     .mbtn{
       width:100%; text-align:left;
-      padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      padding:9px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.05);
-      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      display:flex; justify-content:space-between; gap:8px; align-items:center;
+      min-height:40px;
     }
     .mbtn.active{border-color:rgba(110,168,255,.60); background:rgba(110,168,255,.14)}
     .mmeta{font-size:12px;color:var(--muted)}
@@ -158,10 +156,9 @@
     .saldo.warn{background:rgba(183,129,3,.22); border-color:rgba(183,129,3,.40)}
     .footer{margin-top:10px; padding:0 14px 14px; font-size:12px;color:var(--muted); display:flex; gap:10px; align-items:center; justify-content:space-between}
     @media (max-width: 1100px){
-      .grid{grid-template-columns:1fr}
-      .side{position:relative; top:auto; height:auto}
       header{position:relative; top:auto}
       td.name{width:180px}
+      .months{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
     }
       /* --- Admin (hasło + narzędzia) --- */
     .modal{
@@ -285,24 +282,14 @@
   </header>
 
   <div class="grid">
-    <aside class="side">
-      <div class="section">
-        <h2>Nawigacja</h2>
-        <div class="months" id="months"></div>
-      </div>
-
-      <div class="section">
-        <h2>Podgląd wybranego miesiąca</h2>
-        <div class="statgrid">
-          <div class="stat"><div class="k">Suma + (miesiąc)</div><div class="v" id="teamPlus">0.0</div></div>
-          <div class="stat"><div class="k">Suma - (miesiąc)</div><div class="v" id="teamMinus">0.0</div></div>
-          <div class="stat"><div class="k">Saldo (miesiąc)</div><div class="v" id="teamSaldo">0.0</div></div>
-          <div class="stat"><div class="k">Status (miesiąc)</div><div class="v" id="teamStatus">OK</div></div>
-        </div>
-      </div>
-    </aside>
-
     <main class="main">
+      <div class="months-panel">
+        <details id="monthsDetails" open>
+          <summary><b>Nawigacja miesięcy</b> — rozwiń / schowaj</summary>
+          <div class="months" id="months"></div>
+        </details>
+      </div>
+
       <div class="mainhead">
         <h3 id="mainTitle">Styczeń 2026</h3>
         <div style="font-size:12px;color:var(--muted)">zielone: nadgodziny • czerwone: do odrobienia • żółte: OK</div>
@@ -440,10 +427,6 @@
     adminEmpAddBtn: document.getElementById('adminEmpAddBtn'),
     adminRemoveDataChk: document.getElementById('adminRemoveDataChk'),
     adminResetBtn: document.getElementById('adminResetBtn'),
-    teamPlus: document.getElementById('teamPlus'),
-    teamMinus: document.getElementById('teamMinus'),
-    teamSaldo: document.getElementById('teamSaldo'),
-    teamStatus: document.getElementById('teamStatus'),
     fbAuthModal: document.getElementById('firebaseAuthModal'),
     fbEmail: document.getElementById('fbEmail'),
     fbPass: document.getElementById('fbPass'),
@@ -1031,13 +1014,7 @@
       const btn = document.createElement('button');
       btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"");
       btn.type="button";
-      btn.innerHTML = `
-        <div>
-          <div><b>${monthNames[m-1]}</b> <span class="mmeta">${YEAR}</span></div>
-          <div class="mmeta">Saldo zespołu: ${fmt(t.saldo)}</div>
-        </div>
-        <span class="badge ${clsFromStatus(t.status)}">${t.status}</span>
-      `;
+      btn.innerHTML = `<span><b>${monthNames[m-1]} ${YEAR}</b></span><span class="badge ${clsFromStatus(t.status)}">${t.status}</span>`;
       btn.addEventListener('click', ()=>{
         currentMonth = m;
         currentView = "month";
@@ -1049,11 +1026,8 @@
   }
 
   function setMonthPreview(){
-    const t = monthTeamTotals(currentMonth);
-    els.teamPlus.textContent = fmt(t.plus);
-    els.teamMinus.textContent = fmt(t.minus);
-    els.teamSaldo.textContent = fmt(t.saldo);
-    els.teamStatus.textContent = t.status;
+    // Panel podglądu miesiąca został usunięty — zachowujemy funkcję dla kompatybilności wywołań.
+    return;
   }
 
   function calcMonthTotalsForEmp(m, emp){
@@ -1103,7 +1077,7 @@
         th.textContent=d;
         tr1.appendChild(th);
       }
-      ["Suma +","Suma -","Saldo","Status"].forEach(t=>{
+      ["Saldo","Status"].forEach(t=>{
         const th=document.createElement('th'); th.textContent=t; tr1.appendChild(th);
       });
 
@@ -1147,8 +1121,6 @@
             arr[d-1] = input.value.replace(',', '.');
             const t = calcMonthTotalsForEmp(m, emp);
             document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-              row.querySelector('[data-role="plus"]').textContent = fmt(t.plus);
-              row.querySelector('[data-role="minus"]').textContent = fmt(t.minus);
               row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
               row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
             });
@@ -1181,8 +1153,6 @@
 
         const t = calcMonthTotalsForEmp(m, emp);
 
-        const tdPlus=document.createElement('td'); tdPlus.className="sum"; tdPlus.dataset.role="plus"; tdPlus.textContent=fmt(t.plus); tr.appendChild(tdPlus);
-        const tdMinus=document.createElement('td'); tdMinus.className="sum"; tdMinus.dataset.role="minus"; tdMinus.textContent=fmt(t.minus); tr.appendChild(tdMinus);
         const tdSaldo=document.createElement('td'); tdSaldo.className="sum"; tdSaldo.dataset.role="saldo"; tdSaldo.innerHTML=`<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`; tr.appendChild(tdSaldo);
         const tdStatus=document.createElement('td'); tdStatus.className="sum"; tdStatus.dataset.role="status"; tdStatus.innerHTML=`<span class="status ${t.cls}">${t.status}</span>`; tr.appendChild(tdStatus);
 
@@ -1212,7 +1182,7 @@
     const table=document.createElement('table');
     const thead=document.createElement('thead');
     const tr1=document.createElement('tr');
-    ["Imię i nazwisko","Suma + (rok)","Suma - (rok)","Saldo (rok)","Status (rok)"].forEach(t=>{
+    ["Imię i nazwisko","Saldo (rok)","Status (rok)"].forEach(t=>{
       const th=document.createElement('th'); th.textContent=t; tr1.appendChild(th);
     });
     thead.appendChild(tr1);
@@ -1225,8 +1195,6 @@
 
       const tr=document.createElement('tr');
       const td1=document.createElement('td'); td1.className="name"; td1.innerHTML=`<b>${emp}</b>`; tr.appendChild(td1);
-      const td3=document.createElement('td'); td3.className="sum"; td3.textContent=fmt(t.plus); tr.appendChild(td3);
-      const td4=document.createElement('td'); td4.className="sum"; td4.textContent=fmt(t.minus); tr.appendChild(td4);
       const td5=document.createElement('td'); td5.className="sum"; td5.innerHTML=`<span class="saldo ${cls}">${fmt(t.saldo)}</span>`; tr.appendChild(td5);
       const td6=document.createElement('td'); td6.className="sum"; td6.innerHTML=`<span class="status ${cls}">${t.status}</span>`; tr.appendChild(td6);
 
