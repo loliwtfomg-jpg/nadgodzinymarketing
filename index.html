@@ -91,8 +91,53 @@
       background:rgba(255,255,255,.05);
       display:flex; justify-content:space-between; gap:8px; align-items:center;
       min-height:40px;
+      position:relative;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
     }
-    .mbtn.active{border-color:rgba(110,168,255,.60); background:rgba(110,168,255,.14)}
+    .mbtn:hover{border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.07)}
+    .mbtn.active{
+      border-color:rgba(110,168,255,.95);
+      background:linear-gradient(180deg, rgba(110,168,255,.24), rgba(110,168,255,.10));
+      box-shadow:
+        0 0 0 2px rgba(110,168,255,.22) inset,
+        0 0 0 1px rgba(110,168,255,.30),
+        0 0 14px rgba(110,168,255,.26);
+      transform:translateY(-1px);
+      animation: activeMonthPulse 1.25s ease-in-out infinite;
+    }
+    .mbtn.active::after{
+      content:"EDYCJA";
+      position:absolute;
+      top:-8px;
+      right:10px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.4px;
+      padding:2px 7px;
+      border-radius:999px;
+      color:#dbeafe;
+      border:1px solid rgba(110,168,255,.55);
+      background:rgba(7,24,55,.95);
+      box-shadow:0 0 10px rgba(110,168,255,.18);
+      pointer-events:none;
+    }
+    @keyframes activeMonthPulse{
+      0%,100%{
+        box-shadow:
+          0 0 0 2px rgba(110,168,255,.20) inset,
+          0 0 0 1px rgba(110,168,255,.28),
+          0 0 10px rgba(110,168,255,.18);
+      }
+      50%{
+        box-shadow:
+          0 0 0 2px rgba(110,168,255,.34) inset,
+          0 0 0 1px rgba(110,168,255,.48),
+          0 0 22px rgba(110,168,255,.34);
+      }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .mbtn.active{animation:none}
+    }
     .mmeta{font-size:12px;color:var(--muted)}
     .badge{
       font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14);
