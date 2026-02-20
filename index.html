@@ -1014,7 +1014,7 @@
       const btn = document.createElement('button');
       btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"");
       btn.type="button";
-      btn.innerHTML = `<span><b>${monthNames[m-1]} ${YEAR}</b></span><span class="badge ${clsFromStatus(t.status)}">${t.status}</span>`;
+      btn.innerHTML = `<span><b>${monthNames[m-1]} ${YEAR}</b></span>`;
       btn.addEventListener('click', ()=>{
         currentMonth = m;
         currentView = "month";
