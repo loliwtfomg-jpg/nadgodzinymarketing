@@ -1325,6 +1325,7 @@ function normalizeCellValue(val){
   });
 
   // ENTER / Shift+ENTER navigation for day inputs (robust across re-render)
+  // IMPORTANT: use capture=true and row-scoped navigation to avoid losing focus due to any bubbling handlers
   document.addEventListener('keydown', (e)=>{
     if(e.key !== 'Enter') return;
     const t = e.target;
@@ -1338,6 +1339,7 @@ function normalizeCellValue(val){
     const d = Number(t.dataset.day);
     if(!m || !d) return;
 
+    // Persist current cell value (no blur!)
     if(!state.months[m]) state.months[m] = {};
     if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill("");
     const arr = state.months[m][emp];
@@ -1347,17 +1349,25 @@ function normalizeCellValue(val){
     paintDayInput(t);
     arr[d-1] = v;
 
+    // Update totals for this row
     const totals = calcMonthTotalsForEmp(m, emp);
-    document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-      row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${totals.cls}">${fmt(totals.saldo)}</span>`;
-      row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${totals.cls}">${totals.status}</span>`;
+    const rowSel = `tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`;
+    document.querySelectorAll(rowSel).forEach(row=>{
+      const saldoEl = row.querySelector('[data-role="saldo"]');
+      const statusEl = row.querySelector('[data-role="status"]');
+      if (saldoEl) saldoEl.innerHTML = `<span class="saldo ${totals.cls}">${fmt(totals.saldo)}</span>`;
+      if (statusEl) statusEl.innerHTML = `<span class="status ${totals.cls}">${totals.status}</span>`;
     });
 
     setMonthPreview();
     queueSave(700);
 
+    // Focus move within the SAME row (no attribute escaping issues)
+    const row = t.closest('tr');
+    if(!row) return;
+
     const dir = e.shiftKey ? -1 : 1;
-    const inputs = Array.from(document.querySelectorAll(`input.in[data-emp="${attrEscape(emp)}"][data-month="${m}"]`))
+    const inputs = Array.from(row.querySelectorAll('input.in'))
       .filter(el => el && !el.disabled)
       .sort((a,b)=> Number(a.dataset.day) - Number(b.dataset.day));
 
@@ -1368,11 +1378,15 @@ function normalizeCellValue(val){
     if(j < 0 || j >= inputs.length) return;
 
     const next = inputs[j];
-    next.focus({preventScroll:true});
-    next.select();
-    next.scrollIntoView({block:'nearest', inline:'nearest'});
-  });
-
+    // Defer focus to next tick in case something updates synchronously
+    setTimeout(()=>{
+      try{
+        next.focus({preventScroll:true});
+        next.select();
+        next.scrollIntoView({block:'nearest', inline:'nearest'});
+      }catch(_){}
+    }, 0);
+  }, true);
 
   // Firebase auth login actions
   if (els.fbLoginBtn) {
