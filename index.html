@@ -190,6 +190,10 @@
     }
     .in:focus{border-color:rgba(110,168,255,.70); box-shadow:0 0 0 3px rgba(110,168,255,.22)}
     .in[disabled]{opacity:.35}
+    .in.code-u{background:rgba(46,139,87,.22); border-color:rgba(46,139,87,.55); color:#d9ffe8; font-weight:800}
+    .in.code-o{background:rgba(129,88,214,.22); border-color:rgba(129,88,214,.55); color:#efe5ff; font-weight:800}
+    .in.code-l4{background:rgba(214,89,49,.20); border-color:rgba(214,89,49,.52); color:#ffe7dc; font-weight:800}
+    .in.code-ut{background:rgba(31,143,78,.16); border-color:rgba(31,143,78,.45); color:#ddffea; font-weight:800}
     .sum{font-family:var(--mono); font-size:12px; white-space:nowrap}
     .status{font-weight:800; font-size:12px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); display:inline-flex;}
     .status.good{background:rgba(31,143,78,.22); border-color:rgba(31,143,78,.40)}
@@ -337,7 +341,7 @@
 
       <div class="mainhead">
         <h3 id="mainTitle">Styczeń 2026</h3>
-        <div style="font-size:12px;color:var(--muted)">zielone: nadgodziny • czerwone: do odrobienia • żółte: OK</div>
+        <div style="font-size:12px;color:var(--muted)">zielone: nadgodziny • czerwone: do odrobienia • żółte: OK • kody: U/O/L4/UT</div>
       </div>
 
       <div class="tablewrap" id="tableWrap"></div>
@@ -543,6 +547,30 @@
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
   }
+  const ABSENCE_CODES = new Set(['U','O','L4','UT']);
+  function normalizeCellValue(val){
+    if(val==null) return '';
+    let v = String(val).trim().replace(',', '.').toUpperCase();
+    if(!v || v==='-' || v==='+') return '';
+    if(ABSENCE_CODES.has(v)) return v;
+    if(/^[+-]?\d+(\.\d+)?$/.test(v)) return v;
+    return '';
+  }
+  function codeClassForValue(val){
+    const v = normalizeCellValue(val);
+    if(!v) return '';
+    if(v==='U') return 'code-u';
+    if(v==='O') return 'code-o';
+    if(v==='L4') return 'code-l4';
+    if(v==='UT') return 'code-ut';
+    return '';
+  }
+  function paintDayInput(input){
+    if(!input) return;
+    input.classList.remove('code-u','code-o','code-l4','code-ut');
+    const cls = codeClassForValue(input.value);
+    if(cls) input.classList.add(cls);
+  }
   function fmt(n){ return (Math.round(n*10)/10).toFixed(1); }
   function statusFromSaldo(s){ return s>0 ? "Nadgodziny" : (s<0 ? "Do odrobienia" : "OK"); }
   function clsFromStatus(st){ return st==="Nadgodziny" ? "good" : (st==="Do odrobienia" ? "bad" : "warn"); }
@@ -587,7 +615,7 @@
       for (const emp of emps) {
         const arr = Array.isArray(remoteMonth[emp]) ? remoteMonth[emp].slice(0,31) : [];
         while (arr.length < 31) arr.push("");
-        out.months[m][emp] = arr.map(v => (v == null ? "" : String(v)));
+        out.months[m][emp] = arr.map(v => normalizeCellValue(v));
       }
     }
     return out;
@@ -1108,7 +1136,7 @@
 
       const bh = document.createElement('div');
       bh.className = "blockhead";
-      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b></div><div>zapis do chmury po wyjściu z pola</div>`;
+      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b>, <b>U</b>, <b>O</b>, <b>L4</b>, <b>UT</b></div><div>zapis do chmury po wyjściu z pola</div>`;
       mb.appendChild(bh);
 
       const table = document.createElement('table');
@@ -1158,12 +1186,18 @@
           const td=document.createElement('td'); td.className="daycell";
           const input=document.createElement('input');
           input.className="in";
-          input.inputMode="decimal";
+          input.inputMode="text";
+          input.autocapitalize="characters";
+          input.autocomplete="off";
+          input.spellcheck=false;
+          input.maxLength = 6;
           input.value = arr[d-1] ?? "";
           input.disabled = d>dim;
+          paintDayInput(input);
 
           input.addEventListener('input', ()=>{
             arr[d-1] = input.value.replace(',', '.');
+            paintDayInput(input);
             const t = calcMonthTotalsForEmp(m, emp);
             document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
               row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
@@ -1175,13 +1209,9 @@
           });
 
           input.addEventListener('blur', ()=>{
-            let v = (input.value || "").trim().replace(',', '.');
-            if(v === "-" || v === "+") v = "";
-            // sanitize invalid junk
-            if(v && !/^[+-]?\d+(\.\d+)?$/.test(v)) {
-              v = "";
-            }
+            const v = normalizeCellValue(input.value);
             input.value = v;
+            paintDayInput(input);
             arr[d-1] = v;
             buildMonths();
             setMonthPreview();
