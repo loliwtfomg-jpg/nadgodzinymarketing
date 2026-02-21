@@ -363,7 +363,9 @@
       border-color: rgba(255,255,255,.18);
     }
     .daycell.is-weekend .in{
-      background: rgba(255,255,255,.05);
+      background: rgba(110,168,255,.10);
+      border-color: rgba(110,168,255,.28);
+      box-shadow: inset 0 0 0 1px rgba(110,168,255,.16);
     }
     .daycell.is-holiday .in{
       background: rgba(255,210,120,.10);
@@ -766,6 +768,9 @@ function normalizeCellValue(val){
   function cssEscape(s){
     if(window.CSS && CSS.escape) return CSS.escape(s);
     return String(s).replace(/["\\]/g, "\\$&");
+  }
+  function attrEscape(s){
+    return String(s).replace(/\\/g,"\\\\").replace(/"/g, "\\\"");
   }
   function showToast(msg, ok=true){
     if (cloudBadge) {
@@ -1319,6 +1324,56 @@ function normalizeCellValue(val){
     if(e.key === "Escape" && els.adminModal && els.adminModal.style.display === "flex") closeAdminModal();
   });
 
+  // ENTER / Shift+ENTER navigation for day inputs (robust across re-render)
+  document.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Enter') return;
+    const t = e.target;
+    if(!(t && t.classList && t.classList.contains('in') && t.dataset && t.dataset.emp)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const emp = t.dataset.emp;
+    const m = Number(t.dataset.month);
+    const d = Number(t.dataset.day);
+    if(!m || !d) return;
+
+    if(!state.months[m]) state.months[m] = {};
+    if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill("");
+    const arr = state.months[m][emp];
+
+    const v = normalizeCellValue(t.value);
+    t.value = v;
+    paintDayInput(t);
+    arr[d-1] = v;
+
+    const totals = calcMonthTotalsForEmp(m, emp);
+    document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
+      row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${totals.cls}">${fmt(totals.saldo)}</span>`;
+      row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${totals.cls}">${totals.status}</span>`;
+    });
+
+    setMonthPreview();
+    queueSave(700);
+
+    const dir = e.shiftKey ? -1 : 1;
+    const inputs = Array.from(document.querySelectorAll(`input.in[data-emp="${attrEscape(emp)}"][data-month="${m}"]`))
+      .filter(el => el && !el.disabled)
+      .sort((a,b)=> Number(a.dataset.day) - Number(b.dataset.day));
+
+    const idx = inputs.indexOf(t);
+    if(idx < 0) return;
+
+    let j = idx + dir;
+    if(j < 0 || j >= inputs.length) return;
+
+    const next = inputs[j];
+    next.focus({preventScroll:true});
+    next.select();
+    next.scrollIntoView({block:'nearest', inline:'nearest'});
+  });
+
+
   // Firebase auth login actions
   if (els.fbLoginBtn) {
     els.fbLoginBtn.addEventListener('click', async () => {
@@ -1585,61 +1640,17 @@ function normalizeCellValue(val){
               row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
               row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
             });
-            buildMonths();
+            // buildMonths() removed to preserve focus while typing
             setMonthPreview();
             queueSave(1200);
           });
-
-          input.addEventListener('keydown', (e)=>{
-            if(e.key === 'Enter'){
-              e.preventDefault();
-              e.stopPropagation();
-
-              const dir = e.shiftKey ? -1 : 1;
-
-              // Zatwierdź wpis (jak przy blur, ale bez utraty focusu)
-              const v = normalizeCellValue(input.value);
-              input.value = v;
-              paintDayInput(input);
-              arr[d-1] = v;
-
-              // Odśwież saldo/status w tym miesiącu dla pracownika
-              const t = calcMonthTotalsForEmp(m, emp);
-              document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-                row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
-                row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
-              });
-
-              // Podgląd + zapis w chmurze (bez przebudowy całego DOM tutaj)
-              setMonthPreview();
-              saveRemote(false).catch(()=>{});
-
-              // Przejdź do następnego/poprzedniego dnia (SHIFT+ENTER wstecz)
-              const tryFocus = (day)=>{
-                const sel = `input.in[data-emp="${cssEscape(emp)}"][data-month="${m}"][data-day="${day}"]`;
-                const el = document.querySelector(sel);
-                if(el && !el.disabled){
-                  el.focus({preventScroll:true});
-                  el.select();
-                  // delikatnie przewiń, jeśli trzeba
-                  el.scrollIntoView({block:'nearest', inline:'nearest'});
-                  return true;
-                }
-                return false;
-              };
-
-              let day = d + dir;
-              while(day >= 1 && day <= dim){
-                if(tryFocus(day)) break;
-                day += dir;
-              }
-            }
-          });input.addEventListener('blur', ()=>{
+          // keydown handled globally (ENTER / Shift+ENTER)
+          input.addEventListener('blur', ()=>{
             const v = normalizeCellValue(input.value);
             input.value = v;
             paintDayInput(input);
             arr[d-1] = v;
-            buildMonths();
+            // buildMonths() removed to preserve focus while typing
             setMonthPreview();
             saveRemote(false).catch(()=>{});
             if (pendingRemote && !isEditingCell()) {
