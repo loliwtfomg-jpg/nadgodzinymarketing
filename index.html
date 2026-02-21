@@ -320,6 +320,7 @@
         <select id="viewSel">
           <option value="month">Miesiąc (edycja)</option>
           <option value="summary">Podsumowanie 2026 (tylko odczyt)</option>
+          <option value="summary_absences">Podsumowanie urlopy (tylko odczyt)</option>
         </select>
       </div>
 
@@ -1080,6 +1081,51 @@
     return { plus, minus, saldo, status: statusFromSaldo(saldo) };
   }
 
+
+  function collectAbsenceEntries(){
+    const out = [];
+    for(let m=1;m<=12;m++){
+      const dim = daysInMonth(YEAR,m);
+      for(const emp of employees){
+        const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
+        for(let d=1; d<=dim; d++){
+          const raw = normalizeCellValue(arr[d-1]);
+          if(!ABSENCE_CODES.has(raw)) continue;
+          out.push({
+            emp,
+            code: raw,
+            month: m,
+            day: d,
+            label: `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${YEAR}`,
+            weekday: weekdayPL(YEAR,m,d)
+          });
+        }
+      }
+    }
+    out.sort((a,b)=>{
+      if(a.month !== b.month) return a.month - b.month;
+      if(a.day !== b.day) return a.day - b.day;
+      return a.emp.localeCompare(b.emp,'pl');
+    });
+    return out;
+  }
+
+  function absenceCountsForEmp(emp){
+    const counts = { U:0, O:0, L4:0, UT:0, total:0 };
+    for(let m=1;m<=12;m++){
+      const dim = daysInMonth(YEAR,m);
+      const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
+      for(let d=1; d<=dim; d++){
+        const v = normalizeCellValue(arr[d-1]);
+        if(ABSENCE_CODES.has(v)){
+          counts[v] = (counts[v] || 0) + 1;
+          counts.total++;
+        }
+      }
+    }
+    return counts;
+  }
+
   function buildMonths(){
     els.months.innerHTML = "";
     for(let m=1;m<=12;m++){
@@ -1282,9 +1328,107 @@
     els.tableWrap.appendChild(mb);
   }
 
+
+  function renderAbsenceSummary(){
+    els.mainTitle.textContent = `Podsumowanie urlopy ${YEAR}`;
+    setMonthPreview();
+
+    const host = document.createElement('div');
+
+    const mb1 = document.createElement('div');
+    mb1.className="monthblock";
+    const bh1 = document.createElement('div');
+    bh1.className="blockhead";
+    bh1.innerHTML = `<div><b>Podsumowanie urlopów / nieobecności</b> • tylko odczyt</div><div>Kody: U, O, L4, UT</div>`;
+    mb1.appendChild(bh1);
+
+    const table1=document.createElement('table');
+    const thead1=document.createElement('thead');
+    const trA=document.createElement('tr');
+    ["Imię i nazwisko","U","O","L4","UT","Razem dni"].forEach(t=>{
+      const th=document.createElement('th'); th.textContent=t; trA.appendChild(th);
+    });
+    thead1.appendChild(trA);
+    table1.appendChild(thead1);
+
+    const tbody1=document.createElement('tbody');
+    for(const emp of employees){
+      const c = absenceCountsForEmp(emp);
+      const tr=document.createElement('tr');
+
+      const tdN=document.createElement('td'); tdN.className="name"; tdN.innerHTML=`<b>${emp}</b>`; tr.appendChild(tdN);
+      ["U","O","L4","UT"].forEach(code=>{
+        const td=document.createElement('td');
+        td.className="sum";
+        td.innerHTML = `<span class="saldo ${c[code] ? 'good' : 'warn'}">${c[code] || 0}</span>`;
+        tr.appendChild(td);
+      });
+      const tdT=document.createElement('td');
+      tdT.className="sum";
+      tdT.innerHTML = `<span class="saldo ${c.total ? 'good' : 'warn'}">${c.total || 0}</span>`;
+      tr.appendChild(tdT);
+
+      tbody1.appendChild(tr);
+    }
+    table1.appendChild(tbody1);
+    mb1.appendChild(table1);
+    host.appendChild(mb1);
+
+    const entries = collectAbsenceEntries();
+    const mb2 = document.createElement('div');
+    mb2.className="monthblock";
+    mb2.style.marginTop = "12px";
+
+    const bh2 = document.createElement('div');
+    bh2.className="blockhead";
+    bh2.innerHTML = `<div><b>Lista terminów</b> • wszystkie miesiące</div><div>${entries.length} wpisów</div>`;
+    mb2.appendChild(bh2);
+
+    const table2=document.createElement('table');
+    const thead2=document.createElement('thead');
+    const trB=document.createElement('tr');
+    ["Data","Dzień","Imię i nazwisko","Kod","Opis"].forEach(t=>{
+      const th=document.createElement('th'); th.textContent=t; trB.appendChild(th);
+    });
+    thead2.appendChild(trB);
+    table2.appendChild(thead2);
+
+    const tbody2=document.createElement('tbody');
+    if(entries.length){
+      const codeLabels = { U:"Urlop", O:"Opieka", L4:"L4", UT:"Urlop za targi" };
+      const statusClsByCode = { U:"good", O:"warn", L4:"bad", UT:"good" };
+      entries.forEach(e=>{
+        const tr=document.createElement('tr');
+        const tdD=document.createElement('td'); tdD.className="sum"; tdD.textContent=e.label; tr.appendChild(tdD);
+        const tdW=document.createElement('td'); tdW.className="sum"; tdW.textContent=e.weekday; tr.appendChild(tdW);
+        const tdE=document.createElement('td'); tdE.className="name"; tdE.innerHTML=`<b>${e.emp}</b>`; tr.appendChild(tdE);
+        const tdC=document.createElement('td'); tdC.className="sum"; tdC.innerHTML=`<span class="status ${statusClsByCode[e.code] || 'warn'}">${e.code}</span>`; tr.appendChild(tdC);
+        const tdO=document.createElement('td'); tdO.textContent=codeLabels[e.code] || e.code; tr.appendChild(tdO);
+        tbody2.appendChild(tr);
+      });
+    } else {
+      const tr=document.createElement('tr');
+      const td=document.createElement('td');
+      td.colSpan=5;
+      td.style.padding='14px';
+      td.style.color='var(--muted)';
+      td.textContent='Brak wpisanych kodów U / O / L4 / UT w całym roku.';
+      tr.appendChild(td);
+      tbody2.appendChild(tr);
+    }
+
+    table2.appendChild(tbody2);
+    mb2.appendChild(table2);
+    host.appendChild(mb2);
+
+    els.tableWrap.innerHTML="";
+    els.tableWrap.appendChild(host);
+  }
+
   function render(){
     buildMonths();
     if(currentView==="month") renderMonth();
+    else if(currentView==="summary_absences") renderAbsenceSummary();
     else renderSummary();
   }
 
