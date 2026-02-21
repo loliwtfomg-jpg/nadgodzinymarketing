@@ -131,6 +131,8 @@
       box-shadow:0 0 10px rgba(110,168,255,.18);
       pointer-events:none;
     }
+    /* Jeżeli miesiąc jest zamknięty — pokaż kłódkę zamiast napisu "EDYCJA" */
+    .mbtn.active.locked::after{content:"🔒"; padding:2px 8px}
     @keyframes activeMonthPulse{
       0%,100%{
         box-shadow:
@@ -257,8 +259,12 @@
       display:flex; align-items:center; justify-content:center;
       z-index:200;
     }
+    /* Admin modal: szerzej i niżej + przewijanie w środku (żeby zawsze było widać ✕) */
     .modal-card{
-      width:min(640px, calc(100vw - 24px));
+      width:min(1120px, calc(100vw - 24px));
+      max-height:calc(100vh - 40px);
+      display:flex;
+      flex-direction:column;
       border:1px solid var(--line);
       border-radius:var(--radius);
       background:rgba(15,26,46,.98);
@@ -270,6 +276,9 @@
       padding:14px 14px;
       border-bottom:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.18);
+      position:sticky;
+      top:0;
+      z-index:2;
     }
     .modal-title{font-weight:900; font-size:14px}
     .modal-sub{margin-top:4px; font-size:12px; color:var(--muted)}
@@ -280,7 +289,7 @@
       background:rgba(255,255,255,.06);
       color:var(--text);
     }
-    .modal-body{padding:14px}
+    .modal-body{padding:14px; flex:1; overflow:auto}
     .modal-label{display:block; font-size:12px; color:var(--muted); margin-bottom:8px}
     .modal-input{
       width:100%;
@@ -451,6 +460,11 @@
         <input id="adminPass" class="modal-input" type="password" placeholder="Wpisz hasło…" autocomplete="current-password" />
         <div id="adminMsg" class="modal-msg" style="display:none"></div>
 
+        <!-- Logowanie admina przeniesione nad narzędzia (bez dodatkowego paska na dole) -->
+        <div id="adminLoginRow" style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px">
+          <button id="adminLoginBtn" type="button" class="btn-primary">Zaloguj</button>
+        </div>
+
         <div id="adminTools" style="display:none; margin-top:14px">
           <div class="modal-sub" style="margin:0 0 10px 0">Ustawienia</div>
           <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px 0">
@@ -482,7 +496,7 @@
           <div id="adminLocksList" class="admin-list" style="gap:6px;margin-bottom:12px"></div>
 
           <div style="display:flex; gap:10px; align-items:center; margin:0 0 18px 0">
-            <button id="adminSaveSettings class="btn">Zapisz ustawienia</button>
+            <button id="adminSaveSettings" class="btn" type="button">Zapisz ustawienia</button>
             <span id="adminSettingsSaved" style="color:var(--muted); font-size:12px"></span>
           </div>
 
@@ -513,10 +527,7 @@
         </div>
       </div>
 
-      <div class="modal-actions">
-        <button id="adminLoginBtn" type="button" class="btn-primary">Zaloguj</button>
-        <button id="adminCancelBtn" type="button">Anuluj</button>
-      </div>
+      <!-- Usunięto dolny pasek akcji: zamknięcie odbywa się przez ✕ w nagłówku -->
     </div>
   </div>
 
@@ -1759,7 +1770,8 @@ function normalizeCellValue(val){
     for(let m=1;m<=12;m++){
       const t = monthTeamTotals(m);
       const btn = document.createElement('button');
-      btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"");
+      const locked = isMonthLocked(m);
+      btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"") + (locked ? " locked":"");
       btn.type="button";
       btn.innerHTML = `<span><b>${monthNames[m-1]} ${YEAR}</b></span>`;
       btn.addEventListener('click', ()=>{
