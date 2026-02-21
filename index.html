@@ -477,8 +477,12 @@
             <span style="color:var(--muted);font-size:12px">Zmiany są podglądem — zapisz ustawienia, aby je utrwalić.</span>
           </div>
 
+          <div class="admin-note" style="margin:12px 0 10px 0">Zamknięcie miesiąca blokuje edycję wpisów (także „Masowe wpisy”). Odblokowanie możliwe w każdej chwili.</div>
+          <div class="admin-head" style="padding:4px 2px">Zamknięcie miesięcy</div>
+          <div id="adminLocksList" class="admin-list" style="gap:6px;margin-bottom:12px"></div>
+
           <div style="display:flex; gap:10px; align-items:center; margin:0 0 18px 0">
-            <button id="adminSaveSettings" class="btn">Zapisz ustawienia</button>
+            <button id="adminSaveSettings class="btn">Zapisz ustawienia</button>
             <span id="adminSettingsSaved" style="color:var(--muted); font-size:12px"></span>
           </div>
 
@@ -638,6 +642,7 @@
     adminColorL4: document.getElementById('adminColorL4'),
     adminColorUT: document.getElementById('adminColorUT'),
     adminResetColors: document.getElementById('adminResetColors'),
+    adminLocksList: document.getElementById('adminLocksList'),
     bulkBtn: document.getElementById('bulkBtn'),
     bulkModal: document.getElementById('bulkModal'),
     bulkCloseBtn: document.getElementById('bulkCloseBtn'),
@@ -860,11 +865,16 @@ function normalizeCellValue(val){
     });
   }
 
+  function isMonthLocked(m){
+    return !!(state.settings && state.settings.monthLocks && state.settings.monthLocks[m]);
+  }
+
   function defaultState(){
     const employees = sortEmployees(defaultEmployees);
     const s = { year: YEAR, updatedAt: Date.now(), employees, months: {}, settings: { 
       holidaysEnabled: true,
-      codeColors: { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e" }
+      codeColors: { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e" },
+      monthLocks: {}
     } };
     for(let m=1;m<=12;m++){
       s.months[m] = {};
@@ -898,6 +908,17 @@ function normalizeCellValue(val){
           };
           return { U: pick('U'), O: pick('O'), L4: pick('L4'), UT: pick('UT') };
         })()
+        ,
+        monthLocks: (() => {
+          const src = (obj.settings && typeof obj.settings.monthLocks === 'object' && obj.settings.monthLocks) ? obj.settings.monthLocks : {};
+          const outLocks = {};
+          for(let mm=1; mm<=12; mm++){
+            const v = (src[mm] !== undefined) ? src[mm] : src[String(mm)];
+            outLocks[mm] = !!v;
+          }
+          return outLocks;
+        })()
+
       }
     };
 
@@ -1129,6 +1150,40 @@ function normalizeCellValue(val){
     setPicker(els.adminColorL4, cc.L4);
     setPicker(els.adminColorUT, cc.UT);
     if(els.adminResetColors) els.adminResetColors.disabled = !on;
+    if(els.adminLocksList){
+      els.adminLocksList.innerHTML = "";
+      state.settings = state.settings || {};
+      state.settings.monthLocks = state.settings.monthLocks || {};
+      for(let mm=1; mm<=12; mm++){
+        const row = document.createElement('div');
+        row.className = 'admin-check';
+        row.style.justifyContent = 'space-between';
+
+        const name = document.createElement('div');
+        name.textContent = monthNames[mm-1];
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.style.width='18px';
+        cb.style.height='18px';
+        cb.style.accentColor='#5aa7ff';
+        cb.checked = !!state.settings.monthLocks[mm];
+        cb.disabled = !on;
+        cb.addEventListener('change', ()=>{
+          if(!isAdmin()) return;
+          state.settings = state.settings || {};
+          state.settings.monthLocks = state.settings.monthLocks || {};
+          state.settings.monthLocks[mm] = !!cb.checked;
+          state.updatedAt = Date.now();
+          render(); // podgląd (bez zapisu)
+          if(els.adminSettingsSaved) els.adminSettingsSaved.textContent = 'Niezapisane zmiany…';
+        });
+
+        row.appendChild(name);
+        row.appendChild(cb);
+        els.adminLocksList.appendChild(row);
+      }
+    }
   }
   function showAdminMsg(text, ok){
     if(!els.adminMsg) return;
@@ -1456,6 +1511,11 @@ function normalizeCellValue(val){
     const dir = e.shiftKey ? -1 : 1;
     const nextDay = d + dir;
     const dim = daysInMonth(YEAR, m);
+
+    if(isMonthLocked(m)){
+      showToast("Ten miesiąc jest zamknięty. Odblokuj go w panelu admina.");
+      return;
+    }
     if(nextDay >= 1 && nextDay <= dim){
       requestCellFocus(emp, m, nextDay);
     }
@@ -1476,7 +1536,11 @@ function normalizeCellValue(val){
     if(els.bulkTo) { els.bulkTo.max = String(dim); els.bulkTo.value = String(d); }
     if(els.bulkVal) { els.bulkVal.value = ""; els.bulkVal.focus(); }
     if(els.bulkHint){
-      els.bulkHint.innerHTML = `Pracownik: <b>${__lastCell.emp}</b> • Miesiąc: <b>${monthNames[__lastCell.month-1]} ${YEAR}</b>`;
+      const locked = isMonthLocked(__lastCell.month);
+      els.bulkHint.innerHTML = `Pracownik: <b>${__lastCell.emp}</b> • Miesiąc: <b>${monthNames[__lastCell.month-1]} ${YEAR}</b>` + (locked ? ` • <b style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</b>` : ``);
+    }
+    if(els.bulkApplyBtn){
+      els.bulkApplyBtn.disabled = isMonthLocked(__lastCell.month);
     }
     els.bulkModal.style.display = "flex";
     els.bulkModal.setAttribute("aria-hidden","false");
@@ -1491,6 +1555,11 @@ function normalizeCellValue(val){
     const emp = __lastCell.emp;
     const m = __lastCell.month;
     const dim = daysInMonth(YEAR, m);
+
+    if(isMonthLocked(m)){
+      showToast("Ten miesiąc jest zamknięty. Odblokuj go w panelu admina.");
+      return;
+    }
 
     let a = parseInt(els.bulkFrom?.value || "1", 10);
     let b = parseInt(els.bulkTo?.value || "1", 10);
@@ -1725,7 +1794,8 @@ function normalizeCellValue(val){
   function renderMonth(){
     const m = currentMonth;
     const dim = daysInMonth(YEAR,m);
-    els.mainTitle.textContent = `${monthNames[m-1]} ${YEAR}`;
+    const locked = isMonthLocked(m);
+    els.mainTitle.textContent = `${monthNames[m-1]} ${YEAR}` + (locked ? `  🔒 (zamknięty)` : ``);
     setMonthPreview();
 
     const blocks = [
@@ -1741,7 +1811,7 @@ function normalizeCellValue(val){
 
       const bh = document.createElement('div');
       bh.className = "blockhead";
-      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b>, <b>U</b>, <b>O</b>, <b>L4</b>, <b>UT</b></div><div>zapis do chmury po wyjściu z pola</div>`;
+      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b>, <b>U</b>, <b>O</b>, <b>L4</b>, <b>UT</b>` + (locked ? ` • <span style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</span>` : ``) + `</div><div>zapis do chmury po wyjściu z pola</div>`;
       mb.appendChild(bh);
 
       const table = document.createElement('table');
@@ -1819,7 +1889,7 @@ function normalizeCellValue(val){
             if (hn) input.title = hn;
           }
           input.value = arr[d-1] ?? "";
-          input.disabled = d>dim;
+          input.disabled = (d>dim) || isMonthLocked(m);
           paintDayInput(input);
 
           input.addEventListener('input', ()=>{
