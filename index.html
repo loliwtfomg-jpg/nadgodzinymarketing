@@ -504,7 +504,40 @@
             <span id="adminSettingsSaved" style="color:var(--muted); font-size:12px"></span>
           </div>
 
-          <div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista w tym komputerze)</div>
+          
+          <details id="adminSecurity" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
+            <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
+              <span style="font-weight:700">Zabezpieczenia</span>
+              <span style="color:var(--muted); font-size:12px">hasła dostępu</span>
+            </summary>
+            <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
+              <div class="modal-sub" style="margin:0 0 10px 0">Hasło panelu admina</div>
+              <div class="admin-grid" style="grid-template-columns: 1fr; gap:10px; margin:0 0 14px 0">
+                <input id="secAdminOld" class="modal-input" type="password" placeholder="Obecne hasło admina" autocomplete="current-password" />
+                <input id="secAdminNew" class="modal-input" type="password" placeholder="Nowe hasło admina (min 6 znaków)" autocomplete="new-password" />
+                <input id="secAdminNew2" class="modal-input" type="password" placeholder="Powtórz nowe hasło admina" autocomplete="new-password" />
+                <div style="display:flex; gap:10px; align-items:center">
+                  <button id="secAdminChangeBtn" type="button" class="btn-primary">Zmień hasło admina</button>
+                  <span id="secAdminMsg" style="color:var(--muted); font-size:12px"></span>
+                </div>
+              </div>
+
+              <div class="modal-sub" style="margin:0 0 10px 0">Hasło dostępu do pliku</div>
+              <div style="color:var(--muted); font-size:12px; margin:-2px 0 10px 0">
+                Po poprawnym wpisaniu hasła zapamiętujemy dostęp w tej przeglądarce.
+              </div>
+              <div class="admin-grid" style="grid-template-columns: 1fr; gap:10px; margin:0 0 6px 0">
+                <input id="secGlobalNew" class="modal-input" type="password" placeholder="Ustaw / zmień hasło dostępu (puste = brak blokady)" autocomplete="new-password" />
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                  <button id="secGlobalSetBtn" type="button" class="btn">Ustaw / zmień hasło dostępu</button>
+                  <button id="secGlobalDisableBtn" type="button" class="btn">Wyłącz ochronę hasłem</button>
+                  <span id="secGlobalStatus" style="color:var(--muted); font-size:12px"></span>
+                </div>
+              </div>
+              <div id="secGlobalMsg" style="color:var(--muted); font-size:12px; margin-top:6px"></div>
+            </div>
+          </details>
+<div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista w tym komputerze)</div>
 
           <div class="admin-grid">
             <div class="admin-head">Pracownicy</div>
@@ -667,6 +700,26 @@
     bulkTo: document.getElementById('bulkTo'),
     bulkVal: document.getElementById('bulkVal'),
     bulkHint: document.getElementById('bulkHint'),
+
+    // Security
+    secAdminOld: document.getElementById('secAdminOld'),
+    secAdminNew: document.getElementById('secAdminNew'),
+    secAdminNew2: document.getElementById('secAdminNew2'),
+    secAdminChangeBtn: document.getElementById('secAdminChangeBtn'),
+    secAdminMsg: document.getElementById('secAdminMsg'),
+
+    secGlobalNew: document.getElementById('secGlobalNew'),
+    secGlobalSetBtn: document.getElementById('secGlobalSetBtn'),
+    secGlobalDisableBtn: document.getElementById('secGlobalDisableBtn'),
+    secGlobalStatus: document.getElementById('secGlobalStatus'),
+    secGlobalMsg: document.getElementById('secGlobalMsg'),
+
+    // Access modal
+    accessModal: document.getElementById('accessModal'),
+    accessPass: document.getElementById('accessPass'),
+    accessOpenBtn: document.getElementById('accessOpenBtn'),
+    accessMsg: document.getElementById('accessMsg'),
+
   };
 
   // ====== UI copy tweaks (online/shared version) ======
@@ -889,7 +942,9 @@ function normalizeCellValue(val){
     const s = { year: YEAR, updatedAt: Date.now(), employees, months: {}, settings: { 
       holidaysEnabled: true,
       codeColors: { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e" },
-      monthLocks: {}
+      monthLocks: {},
+      adminPassword: null,
+      globalAccessPassword: ""
     } };
     for(let m=1;m<=12;m++){
       s.months[m] = {};
@@ -1064,6 +1119,8 @@ function normalizeCellValue(val){
     employees = state.employees.slice();
     render();
     if (isAdmin()) renderAdminEmployees();
+    updateSecurityStatusUI();
+    enforceAccessGate();
     if (!silent) {
       const stamp = new Date(state.updatedAt || Date.now());
       showToast(`zsynchronizowano ${stamp.toLocaleTimeString('pl-PL')}`, true);
@@ -1134,6 +1191,71 @@ function normalizeCellValue(val){
   const ADMIN_PASS = "@Marketing1234";
   const adminKey = `davis_admin_${YEAR}_v1`; // sessionStorage: tylko ta karta
 
+  function getAdminPassword(){
+    // Prefer password saved in settings (synced), fallback to built-in default
+    const p = (state && state.settings) ? state.settings.adminPassword : null;
+    return (typeof p === "string" && p.length >= 6) ? p : ADMIN_PASS;
+  }
+
+  const accessKey = `davis_access_${YEAR}_v1`; // localStorage
+
+  function accessToken(pw){
+    try{
+      // avoid storing plaintext; token changes when password changes
+      return btoa(unescape(encodeURIComponent(pw))).replace(/=+/g,'').slice(0,48);
+    }catch(e){
+      return String(pw || "").slice(0,48);
+    }
+  }
+
+  function isGlobalAccessEnabled(){
+    const pw = (state && state.settings) ? (state.settings.globalAccessPassword || "") : "";
+    return typeof pw === "string" && pw.length >= 4;
+  }
+
+  function isAccessGranted(){
+    if(!isGlobalAccessEnabled()) return true;
+    const pw = state.settings.globalAccessPassword || "";
+    const token = accessToken(pw);
+    return localStorage.getItem(accessKey) === token;
+  }
+
+  function showAccessModal(){
+    if(!els.accessModal) return;
+    els.accessMsg.style.display = "none";
+    els.accessPass.value = "";
+    els.accessModal.style.display = "flex";
+    setTimeout(()=>{ try{ els.accessPass.focus(); }catch(e){} }, 50);
+  }
+
+  function hideAccessModal(){
+    if(!els.accessModal) return;
+    els.accessModal.style.display = "none";
+  }
+
+  function updateSecurityStatusUI(){
+    if(!els.secGlobalStatus) return;
+    const enabled = isGlobalAccessEnabled();
+    els.secGlobalStatus.textContent = enabled ? "Ochrona hasłem: WŁĄCZONA" : "Ochrona hasłem: WYŁĄCZONA";
+  }
+
+  function enforceAccessGate(){
+    // Hide app UI until access granted (if enabled)
+    if(isAccessGranted()){
+      hideAccessModal();
+      // ensure app visible
+      if(els.tableWrap) els.tableWrap.style.filter = "";
+      if(els.months) els.months.style.pointerEvents = "";
+      return true;
+    }else{
+      // blur/disable background slightly
+      if(els.tableWrap) els.tableWrap.style.filter = "blur(4px)";
+      if(els.months) els.months.style.pointerEvents = "none";
+      showAccessModal();
+      return false;
+    }
+  }
+
   function isAdmin(){
     return sessionStorage.getItem(adminKey) === "1";
   }
@@ -1199,7 +1321,9 @@ function normalizeCellValue(val){
         els.adminLocksList.appendChild(row);
       }
     }
-  }
+  
+    updateSecurityStatusUI();
+}
   function showAdminMsg(text, ok){
     if(!els.adminMsg) return;
     els.adminMsg.textContent = text;
@@ -1371,7 +1495,7 @@ if(typed !== phrase){
   if(els.adminLoginBtn){
     els.adminLoginBtn.addEventListener('click', ()=>{
       const p = (els.adminPass.value || "").trim();
-      if(p === ADMIN_PASS){
+      if(p === getAdminPassword()){
         setAdmin(true);
         renderAdminEmployees();
         showAdminMsg("Zalogowano ✅", true);
@@ -1380,6 +1504,107 @@ if(typed !== phrase){
         if(els.adminPass){ els.adminPass.focus(); els.adminPass.select(); }
       }
     });
+
+    // ====== Security (passwords) ======
+    if(els.secAdminChangeBtn){
+      els.secAdminChangeBtn.addEventListener('click', async ()=>{
+        if(!isAdmin()){
+          showAdminMsg("Najpierw zaloguj się jako admin.", false);
+          openAdminModal();
+          return;
+        }
+        const oldP = (els.secAdminOld.value || "").trim();
+        const newP = (els.secAdminNew.value || "").trim();
+        const newP2 = (els.secAdminNew2.value || "").trim();
+
+        const current = getAdminPassword();
+        if(oldP !== current){
+          if(els.secAdminMsg) els.secAdminMsg.textContent = "Błędne obecne hasło.";
+          return;
+        }
+        if(newP.length < 6){
+          if(els.secAdminMsg) els.secAdminMsg.textContent = "Nowe hasło musi mieć min. 6 znaków.";
+          return;
+        }
+        if(newP !== newP2){
+          if(els.secAdminMsg) els.secAdminMsg.textContent = "Hasła nie są identyczne.";
+          return;
+        }
+
+        state.settings.adminPassword = newP;
+        if(els.secAdminMsg) els.secAdminMsg.textContent = "Zmieniono hasło admina ✅";
+        els.secAdminOld.value = ""; els.secAdminNew.value = ""; els.secAdminNew2.value = "";
+        // Persist immediately
+        try{ await saveRemote(true); }catch(e){}
+      });
+    }
+
+    if(els.secGlobalSetBtn){
+      els.secGlobalSetBtn.addEventListener('click', async ()=>{
+        if(!isAdmin()){
+          showAdminMsg("Najpierw zaloguj się jako admin.", false);
+          openAdminModal();
+          return;
+        }
+        const pw = (els.secGlobalNew.value || "").trim();
+        if(pw.length < 4){
+          els.secGlobalMsg.textContent = "Hasło musi mieć min. 4 znaki (lub użyj 'Wyłącz ochronę hasłem').";
+          return;
+        }
+        state.settings.globalAccessPassword = pw;
+        localStorage.removeItem(accessKey); // require re-auth after change
+        updateSecurityStatusUI();
+        els.secGlobalMsg.textContent = "Ustawiono / zmieniono hasło dostępu ✅";
+        els.secGlobalNew.value = "";
+        try{ await saveRemote(true); }catch(e){}
+        // Enforce new gate now (admin also)
+        enforceAccessGate();
+      });
+    }
+
+    if(els.secGlobalDisableBtn){
+      els.secGlobalDisableBtn.addEventListener('click', async ()=>{
+        if(!isAdmin()){
+          showAdminMsg("Najpierw zaloguj się jako admin.", false);
+          openAdminModal();
+          return;
+        }
+        state.settings.globalAccessPassword = "";
+        localStorage.removeItem(accessKey);
+        updateSecurityStatusUI();
+        els.secGlobalMsg.textContent = "Wyłączono ochronę hasłem ✅";
+        try{ await saveRemote(true); }catch(e){}
+        enforceAccessGate();
+      });
+    }
+
+    if(els.accessOpenBtn){
+      const tryOpen = ()=>{
+        const typed = (els.accessPass.value || "").trim();
+        const real = (state.settings && state.settings.globalAccessPassword) ? state.settings.globalAccessPassword : "";
+        if(typed === real){
+          localStorage.setItem(accessKey, accessToken(real));
+          els.accessMsg.style.display = "none";
+          hideAccessModal();
+          if(els.tableWrap) els.tableWrap.style.filter = "";
+          if(els.months) els.months.style.pointerEvents = "";
+        }else{
+          els.accessMsg.textContent = "Błędne hasło.";
+          els.accessMsg.style.display = "block";
+          try{ els.accessPass.focus(); els.accessPass.select(); }catch(e){}
+        }
+      };
+      els.accessOpenBtn.addEventListener('click', tryOpen);
+      if(els.accessPass){
+        els.accessPass.addEventListener('keydown', (e)=>{
+          if(e.key === "Enter"){
+            e.preventDefault();
+            tryOpen();
+          }
+        });
+      }
+    }
+
 
     if(els.adminHolidaysToggle){
       els.adminHolidaysToggle.addEventListener('change', ()=>{
@@ -2188,10 +2413,28 @@ if(typed !== phrase){
 
   render();
   refreshAdminUI();
+  enforceAccessGate();
   initFirebase();
 })();
 
 </script>
 
+
+  <!-- Global access (file password) modal -->
+  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
+    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
+        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
+      </div>
+      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
+        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
+      </div>
+      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
+      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
