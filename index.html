@@ -381,8 +381,10 @@
       box-shadow: inset 0 0 0 1px rgba(110,168,255,.16);
     }
     .daycell.is-holiday .in{
-      background: rgba(255,210,120,.10);
-      box-shadow: inset 0 0 0 1px rgba(255,210,120,.22), 0 0 0 2px rgba(255,210,120,.06);
+      background: rgba(255,210,120,.30);
+      border-color: rgba(255,210,120,.80);
+      box-shadow: inset 0 0 0 2px rgba(255,210,120,.75), 0 0 18px rgba(255,210,120,.22);
+      font-weight: 700;
     }
 
 
@@ -921,13 +923,18 @@
     add(new Date(year,11,26), "Boże Narodzenie (2)");
     return map;
   }
-  const HOLIDAY_MAP = getPolishHolidays(YEAR);
+  const HOLIDAY_CACHE = Object.create(null);
+  function holidayMapFor(y){
+    const yy = Number(y);
+    if(!HOLIDAY_CACHE[yy]) HOLIDAY_CACHE[yy] = getPolishHolidays(yy);
+    return HOLIDAY_CACHE[yy];
+  }
   function isWeekend(y,m,d){
     const wd = new Date(y, m-1, d).getDay();
     return wd===0 || wd===6;
   }
   function holidayName(y,m,d){
-    return HOLIDAY_MAP[fmtDateKey(y,m,d)] || "";
+    return holidayMapFor(y)[fmtDateKey(y,m,d)] || "";
   }
 function normalizeCellValue(val){
     if(val==null) return '';
