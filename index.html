@@ -246,6 +246,7 @@
 
     .absence-summary-table col.c-name{width:38%}
     .absence-summary-table col.c-code{width:15.5%}
+    .absence-summary-table{table-layout:fixed}
     .absence-summary-table thead th,
     .absence-summary-table tbody td{text-align:center}
     .absence-summary-table thead th:first-child,
@@ -409,10 +410,9 @@
 
     /* Year summary alignment */
     .year-summary-table{table-layout:fixed}
+    .year-summary-table th, .year-summary-table td{text-align:center}
     .year-summary-table th:nth-child(1), .year-summary-table td:nth-child(1){text-align:left}
-    .year-summary-table th:nth-child(2), .year-summary-table td:nth-child(2),
-    .year-summary-table th:nth-child(3), .year-summary-table td:nth-child(3){text-align:center}
-    .year-summary-table td:nth-child(2) .saldo, .year-summary-table td:nth-child(3) .status{justify-content:center}
+    .year-summary-table td .saldo, .year-summary-table td .status{justify-content:center}
 
 </style>
 </head>
@@ -506,13 +506,13 @@
             <div style="color:var(--muted);font-size:12px">U (urlop)</div>
             <input id="adminColorU" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
 
-            <div style="color:var(--muted);font-size:12px">O (odbiór / oddanie)</div>
+            <div style="color:var(--muted);font-size:12px">O (opieka)</div>
             <input id="adminColorO" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
 
             <div style="color:var(--muted);font-size:12px">L4 (chorobowe)</div>
             <input id="adminColorL4" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
 
-            <div style="color:var(--muted);font-size:12px">UT (urlop / inny kod)</div>
+            <div style="color:var(--muted);font-size:12px">UT (urlop za targi)</div>
             <input id="adminColorUT" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
 
             <div style="color:var(--muted);font-size:12px">T (targi)</div>
@@ -844,9 +844,9 @@
   }
   const CODE_META = {
     U: { label: 'Urlop', cls: 'good' },
-    O: { label: 'Odbiór / oddanie', cls: 'warn' },
+    O: { label: 'Opieka', cls: 'warn' },
     L4: { label: 'L4', cls: 'bad' },
-    UT: { label: 'Urlop / inny kod', cls: 'good' },
+    UT: { label: 'Urlop za targi', cls: 'good' },
     T: { label: 'Targi', cls: 'warn' },
     Z: { label: 'Zdalnie', cls: 'good' }
   };
@@ -2435,8 +2435,13 @@ if(typed !== phrase){
     const table1=document.createElement('table');
     table1.className = 'absence-summary-table';
     const cg1=document.createElement('colgroup');
-    const c1n=document.createElement('col'); c1n.className='c-name'; cg1.appendChild(c1n);
-    for(let i=0;i<codes.length;i++){ const c=document.createElement('col'); c.className='c-code'; cg1.appendChild(c); }
+    const c1n=document.createElement('col');
+    const codeCount = Math.max(1, codes.length);
+    const nameWidth = codeCount <= 4 ? 44 : (codeCount <= 6 ? 34 : 30);
+    const codeWidth = (100 - nameWidth) / codeCount;
+    c1n.style.width = `${nameWidth}%`;
+    cg1.appendChild(c1n);
+    for(let i=0;i<codes.length;i++){ const c=document.createElement('col'); c.style.width = `${codeWidth}%`; cg1.appendChild(c); }
     table1.appendChild(cg1);
 
     const thead1=document.createElement('thead');
@@ -2620,6 +2625,15 @@ if(typed !== phrase){
 
     const table=document.createElement('table');
     table.className='year-summary-table';
+    const cg=document.createElement('colgroup');
+    const nameCol=document.createElement('col');
+    nameCol.style.width='170px';
+    cg.appendChild(nameCol);
+    const yearColWidth = Math.max(72, Math.floor((window.innerWidth - 420) / YEARS.length));
+    YEARS.forEach(()=>{ const c=document.createElement('col'); c.style.width = `${yearColWidth}px`; cg.appendChild(c); });
+    const totalCol=document.createElement('col'); totalCol.style.width='120px'; cg.appendChild(totalCol);
+    const statusCol=document.createElement('col'); statusCol.style.width='110px'; cg.appendChild(statusCol);
+    table.appendChild(cg);
     const thead=document.createElement('thead');
     const tr1=document.createElement('tr');
     ['Imię i nazwisko', ...YEARS.map(String), 'Saldo (całość)', 'Status'].forEach((t,idx)=>{
