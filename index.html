@@ -210,6 +210,8 @@
     .in.code-o{background:var(--code-o-bg); border-color:var(--code-o-border); color:#efe5ff; font-weight:800}
     .in.code-l4{background:var(--code-l4-bg); border-color:var(--code-l4-border); color:#ffe7dc; font-weight:800}
     .in.code-ut{background:var(--code-ut-bg); border-color:var(--code-ut-border); color:#ddffea; font-weight:800}
+    .in.code-t{background:rgba(255,179,71,.18); border-color:rgba(255,179,71,.50); color:#fff0cf; font-weight:800}
+    .in.code-z{background:rgba(70,130,180,.18); border-color:rgba(70,130,180,.50); color:#ddeeff; font-weight:800}
     .in.num-pos{background:rgba(31,143,78,.14); border-color:rgba(31,143,78,.42); color:#ddffea; font-weight:800}
     .in.num-neg{background:rgba(198,40,40,.14); border-color:rgba(198,40,40,.42); color:#ffd8d8; font-weight:800}
 
@@ -381,10 +383,8 @@
       box-shadow: inset 0 0 0 1px rgba(110,168,255,.16);
     }
     .daycell.is-holiday .in{
-      background: rgba(255,210,120,.30);
-      border-color: rgba(255,210,120,.80);
-      box-shadow: inset 0 0 0 2px rgba(255,210,120,.75), 0 0 18px rgba(255,210,120,.22);
-      font-weight: 700;
+      background: rgba(255,210,120,.10);
+      box-shadow: inset 0 0 0 1px rgba(255,210,120,.22), 0 0 0 2px rgba(255,210,120,.06);
     }
 
 
@@ -401,23 +401,22 @@
 <div class="wrap">
   <header>
     <div class="brand">
-<div class="title">
+      <div class="title">
         <h1>Nadgodziny / wyjścia wcześniejsze</h1>
-        <div class="sub">Wersja lokalna HTML • Rok <b id="yearLabel"></b> • Wpisuj np. <b>10</b> lub <b>-2</b> bez “uciekania” kursora</div>
+        <div class="sub">Wersja lokalna HTML • Rok <b id="yearLabel">2026</b> • Wpisuj np. <b>10</b> lub <b>-2</b> bez “uciekania” kursora</div>
       </div>
     </div>
 
     <div class="toolbar">
       <div class="pill">
         <span style="font-size:12px;color:var(--muted)">Rok:</span>
-        <select id="yearSelect" aria-label="Wybierz rok"></select>
+        <select id="yearSel"></select>
       </div>
-
       <div class="pill">
         <span style="font-size:12px;color:var(--muted)">Widok:</span>
         <select id="viewSel">
           <option value="month">Miesiąc (edycja)</option>
-          <option value="summary">Podsumowanie (tylko odczyt)</option>
+          <option value="summary">Podsumowanie roku (tylko odczyt)</option>
           <option value="summary_absences">Podsumowanie urlopy (tylko odczyt)</option>
         </select>
       </div>
@@ -440,7 +439,7 @@
       </div>
 
       <div class="mainhead">
-        <h3 id="mainTitle">Styczeń</h3>
+        <h3 id="mainTitle">Styczeń 2026</h3>
         <div style="font-size:12px;color:var(--muted)">zielone: nadgodziny • czerwone: do odrobienia • żółte: OK • kody: U/O/L4/UT</div>
       </div>
 
@@ -448,7 +447,7 @@
 
       <div class="footer">
         <div>Dane zapisują się lokalnie w przeglądarce (localStorage). Kliknij “Zapisz teraz”.</div>
-        <div>© 2026</div>
+        <div>© 2025–2035</div>
       </div>
     </main>
   </div>
@@ -482,7 +481,7 @@
             <label for="adminHolidaysToggle" style="cursor:pointer;user-select:none">Podświetl święta i dni wolne (weekendy + ustawowe)</label>
           </div>
 
-          <div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
+          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
           <div class="admin-colors" style="display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:0 0 14px 0">
             <div style="color:var(--muted);font-size:12px">U (urlop)</div>
             <input id="adminColorU" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
@@ -495,21 +494,37 @@
 
             <div style="color:var(--muted);font-size:12px">UT (urlop / inny kod)</div>
             <input id="adminColorUT" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
+
+            <div style="color:var(--muted);font-size:12px">T (targi)</div>
+            <input id="adminColorT" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
+
+            <div style="color:var(--muted);font-size:12px">Z (zdalnie)</div>
+            <input id="adminColorZ" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
           </div>
           <div style="display:flex;gap:10px;align-items:center;margin:0 0 18px 0">
             <button id="adminResetColors" type="button" class="btn">Przywróć domyślne</button>
             <span style="color:var(--muted);font-size:12px">Zmiany są podglądem — zapisz ustawienia, aby je utrwalić.</span>
-          </div>
+          </div></div></details>
 
-          <div class="admin-note" style="margin:12px 0 10px 0">Zamknięcie miesiąca blokuje edycję wpisów (także „Masowe wpisy”). Odblokowanie możliwe w każdej chwili.</div>
-          <div class="admin-head" style="padding:4px 2px">Zamknięcie roku</div>
-          <div class="admin-check" style="justify-content:space-between; margin:6px 0 14px 0">
-            <div><b>Zamknij cały rok</b><div class="hint" style="margin-top:2px">Blokuje edycję wszystkich miesięcy w wybranym roku.</div></div>
-            <input id="adminYearLock" type="checkbox" style="width:18px;height:18px">
-          </div>
-
-          <div class="admin-head" style="padding:4px 2px">Zamknięcie miesięcy</div>
-          <div id="adminLocksList" class="admin-list" style="gap:6px;margin-bottom:12px"></div>
+          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open>
+            <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
+              <span style="font-weight:700">Zamknięcia miesięcy i roku</span>
+              <span style="color:var(--muted); font-size:12px">osobno dla każdego roku</span>
+            </summary>
+            <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
+              <div class="admin-note" style="margin:0 0 10px 0">Wybierz rok i zarządzaj jego blokadami. Zamknięcie roku blokuje wszystkie miesiące tylko w wybranym roku.</div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 12px 0">
+                <label style="font-size:12px;color:var(--muted)">Wybierz rok:</label>
+                <select id="adminLockYearSel"></select>
+                <label class="admin-check" style="margin:0 0 0 8px">
+                  <input id="adminYearLockChk" type="checkbox" />
+                  Zamknij cały wybrany rok
+                </label>
+              </div>
+              <div class="admin-head" style="padding:4px 2px">Zamknięcie miesięcy</div>
+              <div id="adminLocksList" class="admin-list" style="gap:6px;margin-bottom:12px"></div>
+            </div>
+          </details>
 
           <div style="display:flex; gap:10px; align-items:center; margin:0 0 18px 0">
             <button id="adminSaveSettings" class="btn" type="button">Zapisz ustawienia</button>
@@ -549,7 +564,7 @@
               <div id="secGlobalMsg" style="color:var(--muted); font-size:12px; margin-top:6px"></div>
             </div>
           </details>
-<div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista w tym komputerze)</div>
+<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
 
           <div class="admin-grid">
             <div class="admin-head">Pracownicy</div>
@@ -573,7 +588,7 @@
               <button id="adminResetBtn" type="button" class="btn-danger">Reset (ten komputer)</button>
             </div>
           </div>
-        </div>
+        </div></div></details>
       </div>
 
       <!-- Usunięto dolny pasek akcji: zamknięcie odbywa się przez ✕ w nagłówku -->
@@ -627,82 +642,13 @@
 <script>
 
 (() => {
-  // ====== Years ======
-  const YEAR_MIN = 2025;
-  const YEAR_MAX = 2035;
-  const YEARS = Array.from({length: YEAR_MAX - YEAR_MIN + 1}, (_,i) => YEAR_MIN + i);
-
-  function clampYear(y){
-    y = Number(y);
-    if (!Number.isFinite(y)) return 2026;
-    return Math.max(YEAR_MIN, Math.min(YEAR_MAX, Math.trunc(y)));
-  }
-
-  // Remember selected year per browser
-  let YEAR = clampYear(localStorage.getItem('nad_year_v1') || new Date().getFullYear());
-  localStorage.setItem('nad_year_v1', String(YEAR));
-
-
-  function refreshYearUI(){
-    const yearLabel = document.getElementById('yearLabel');
-    if (yearLabel) yearLabel.textContent = String(YEAR);
-    document.title = `Nadgodziny ${YEAR}`;
-    const sel = document.getElementById('yearSelect');
-    if (sel) {
-      if (!sel.options.length) {
-        sel.innerHTML = YEARS.map(y => `<option value="${y}">${y}</option>`).join('');
-      }
-      sel.value = String(YEAR);
-    }
-  }
-
-  function switchYear(nextYear){
-    const y = clampYear(nextYear);
-    if (y === YEAR) return;
-
-    // Detach old listener (if any)
-    try { detachRemote(); } catch(e) {}
-
-    YEAR = y;
-    localStorage.setItem('nad_year_v1', String(YEAR));
-
-    // Clear access/admin status for this tab view (new year uses new keys anyway)
-    try { sessionStorage.removeItem(adminKey()); } catch(e) {}
-
-    // Reset local state for fast UI update
-    state = defaultState();
-    employees = state.employees.slice();
-    currentMonth = 1;
-
-    // Update DB ref and resubscribe if logged in
-    detachRemote();
-    try {
-      if (db) dbRef = db.ref(DB_PATH());
-    } catch(e) {}
-
-    refreshYearUI();
-    buildMonths();
-    renderAll();
-
-    if (remoteReady && currentUser) {
-      subscribeRemote();
-    }
-    showToast(`Rok: ${YEAR}`, true);
-  }
-
-  function initYearSelect(){
-    const sel = document.getElementById('yearSelect');
-    if (!sel) return;
-    sel.innerHTML = YEARS.map(y => `<option value="${y}">${y}</option>`).join('');
-    sel.value = String(YEAR);
-    sel.addEventListener('change', () => switchYear(sel.value));
-  }
-
-
-
-  /* YEAR is dynamic */
+  const YEARS = Array.from({length:11}, (_,i)=>2025+i);
+  let currentYear = Number(localStorage.getItem('nadgodziny_current_year')) || 2026;
+  if(!YEARS.includes(currentYear)) currentYear = 2026;
   const monthNames = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
-  const DB_PATH = () => `nadgodziny/${YEAR}/app`;
+  const DB_BASE = `nadgodziny`;
+  const YEAR_DB_PATH = (y)=> `${DB_BASE}/${y}/app`;
+  const GLOBAL_SETTINGS_PATH = `${DB_BASE}/globalSettings`;
 
   // ====== Inject Firebase login modal (reuse existing modal styles) ======
   document.body.insertAdjacentHTML('beforeend', `
@@ -745,6 +691,7 @@
     mainTitle: document.getElementById('mainTitle'),
     tableWrap: document.getElementById('tableWrap'),
     viewSel: document.getElementById('viewSel'),
+    yearSel: document.getElementById('yearSel'),
     yearLabel: document.getElementById('yearLabel'),
     saveBtn: document.getElementById('saveBtn'),
     resetBtn: document.getElementById('resetBtn'),
@@ -774,9 +721,12 @@
     adminColorO: document.getElementById('adminColorO'),
     adminColorL4: document.getElementById('adminColorL4'),
     adminColorUT: document.getElementById('adminColorUT'),
+    adminColorT: document.getElementById('adminColorT'),
+    adminColorZ: document.getElementById('adminColorZ'),
     adminResetColors: document.getElementById('adminResetColors'),
     adminLocksList: document.getElementById('adminLocksList'),
-    adminYearLock: document.getElementById('adminYearLock'),
+    adminLockYearSel: document.getElementById('adminLockYearSel'),
+    adminYearLockChk: document.getElementById('adminYearLockChk'),
     bulkBtn: document.getElementById('bulkBtn'),
     bulkModal: document.getElementById('bulkModal'),
     bulkCloseBtn: document.getElementById('bulkCloseBtn'),
@@ -808,16 +758,11 @@
 
   };
 
-  // Init year selector
-  initYearSelect();
-  refreshYearUI();
-
-
   // ====== UI copy tweaks (online/shared version) ======
-  els.yearLabel.textContent = YEAR;
+  els.yearLabel.textContent = currentYear;
   const subEl = document.querySelector('.title .sub');
   if (subEl) {
-    subEl.innerHTML = `Wersja online (Firebase) • Rok <b>${YEAR}</b> • Wspólny zapis/odczyt dla całego działu`;
+    subEl.innerHTML = `Wersja online (Firebase) • Rok <b>${currentYear}</b> • Wspólny zapis/odczyt dla całego działu`;
   }
   const footerLeft = document.querySelector('.footer > div:first-child');
   if (footerLeft) {
@@ -877,7 +822,7 @@
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
   }
-  const ABSENCE_CODES = new Set(['U','O','L4','UT']);
+  const ABSENCE_CODES = new Set(['U','O','L4','UT','T','Z']);
   
   // ===== Święta / dni wolne (PL) =====
   function easterDateGregorian(year){
@@ -931,18 +876,14 @@
     add(new Date(year,11,26), "Boże Narodzenie (2)");
     return map;
   }
-  const HOLIDAY_CACHE = Object.create(null);
-  function holidayMapFor(y){
-    const yy = Number(y);
-    if(!HOLIDAY_CACHE[yy]) HOLIDAY_CACHE[yy] = getPolishHolidays(yy);
-    return HOLIDAY_CACHE[yy];
-  }
+  const HOLIDAY_CACHE = {};
+  function getHolidayMap(year){ if(!HOLIDAY_CACHE[year]) HOLIDAY_CACHE[year]=getPolishHolidays(year); return HOLIDAY_CACHE[year]; }
   function isWeekend(y,m,d){
     const wd = new Date(y, m-1, d).getDay();
     return wd===0 || wd===6;
   }
   function holidayName(y,m,d){
-    return holidayMapFor(y)[fmtDateKey(y,m,d)] || "";
+    return getHolidayMap(y)[fmtDateKey(y,m,d)] || "";
   }
 function normalizeCellValue(val){
     if(val==null) return '';
@@ -959,11 +900,13 @@ function normalizeCellValue(val){
     if(v==='O') return 'code-o';
     if(v==='L4') return 'code-l4';
     if(v==='UT') return 'code-ut';
+    if(v==='T') return 'code-t';
+    if(v==='Z') return 'code-z';
     return '';
   }
   function paintDayInput(input){
     if(!input) return;
-    input.classList.remove('code-u','code-o','code-l4','code-ut','num-pos','num-neg');
+    input.classList.remove('code-u','code-o','code-l4','code-ut','code-t','code-z','num-pos','num-neg');
     const cls = codeClassForValue(input.value);
     if(cls){
       input.classList.add(cls);
@@ -1030,18 +973,16 @@ function normalizeCellValue(val){
   }
 
   function isMonthLocked(m){
-    if (state.settings && state.settings.yearLocked) return true;
-    return !!(state.settings && state.settings.monthLocks && state.settings.monthLocks[m]);
+    return !!(state.settings && (state.settings.yearLocked || (state.settings.monthLocks && state.settings.monthLocks[m])));
   }
 
   function defaultState(){
     const employees = sortEmployees(defaultEmployees);
-    const s = { year: YEAR, updatedAt: Date.now(), employees, months: {}, settings: { 
+    const s = { year: currentYear, updatedAt: Date.now(), employees, months: {}, settings: { 
       holidaysEnabled: true,
-      codeColors: { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e" },
+      codeColors: { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e", T: "#ffb347", Z: "#4682b4" },
       monthLocks: {},
-      adminPassword: null,
-      globalAccessPassword: ""
+      yearLocked: false
     } };
     for(let m=1;m<=12;m++){
       s.months[m] = {};
@@ -1060,22 +1001,22 @@ function normalizeCellValue(val){
     const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(obj.employees) : base.employees.slice();
 
     const out = {
-      year: YEAR,
+      year: currentYear,
       updatedAt: Number(obj.updatedAt) || Date.now(),
       employees: emps,
       months: {},
       settings: {
         holidaysEnabled: (obj.settings && typeof obj.settings.holidaysEnabled === "boolean") ? obj.settings.holidaysEnabled : base.settings.holidaysEnabled,
         codeColors: (() => {
-          const def = (base.settings && base.settings.codeColors) ? base.settings.codeColors : { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e" };
+          const def = (base.settings && base.settings.codeColors) ? base.settings.codeColors : { U: "#2e8b57", O: "#8158d6", L4: "#d65931", UT: "#1f8f4e", T: "#ffb347", Z: "#4682b4" };
           const src = (obj.settings && typeof obj.settings.codeColors === 'object') ? obj.settings.codeColors : {};
           const pick = (k) => {
             const v = String(src[k] || '').trim();
             return /^#([0-9a-fA-F]{6})$/.test(v) ? v : def[k];
           };
-          return { U: pick('U'), O: pick('O'), L4: pick('L4'), UT: pick('UT') };
-        })()
-        ,
+          return { U: pick('U'), O: pick('O'), L4: pick('L4'), UT: pick('UT'), T: pick('T'), Z: pick('Z') };
+        })(),
+        yearLocked: !!(obj.settings && obj.settings.yearLocked),
         monthLocks: (() => {
           const src = (obj.settings && typeof obj.settings.monthLocks === 'object' && obj.settings.monthLocks) ? obj.settings.monthLocks : {};
           const outLocks = {};
@@ -1085,9 +1026,7 @@ function normalizeCellValue(val){
           }
           return outLocks;
         })()
-,
-        adminPassword: (obj.settings && typeof obj.settings.adminPassword === "string" && obj.settings.adminPassword.trim().length >= 6) ? obj.settings.adminPassword.trim() : (base.settings.adminPassword || null),
-        globalAccessPassword: (obj.settings && typeof obj.settings.globalAccessPassword === "string") ? obj.settings.globalAccessPassword : (base.settings.globalAccessPassword || "")
+
       }
     };
 
@@ -1114,8 +1053,10 @@ function normalizeCellValue(val){
   let auth = null;
   let db = null;
   let dbRef = null;
-  let dbRefActive = null;
   let dbListener = null;
+  let sharedRef = null;
+  let sharedListener = null;
+  let sharedSettings = {adminPassword:null, globalAccessPassword:''};
   let currentUser = null;
   let pendingRemote = null;
   let saveTimer = null;
@@ -1175,7 +1116,8 @@ function normalizeCellValue(val){
       auth = firebase.auth();
       db = firebase.database();
 
-      dbRef = db.ref(DB_PATH());
+      dbRef = db.ref(YEAR_DB_PATH(currentYear));
+      sharedRef = db.ref(GLOBAL_SETTINGS_PATH);
 
       auth.onAuthStateChanged((user) => {
         currentUser = user || null;
@@ -1183,6 +1125,7 @@ function normalizeCellValue(val){
           remoteReady = true;
           hideAuthModal();
           if (accountBtn) accountBtn.style.display = '';
+          subscribeShared();
           subscribeRemote();
           showToast(`połączono (${currentUser.email || 'konto'})`, true);
         } else {
@@ -1202,12 +1145,13 @@ function normalizeCellValue(val){
   }
 
   function detachRemote(){
-    if (dbRefActive && dbListener) {
-      try { dbRefActive.off('value', dbListener); } catch(e) {}
-    }
+    if (dbRef && dbListener) dbRef.off('value', dbListener);
     dbListener = null;
-    dbRefActive = null;
     pendingRemote = null;
+  }
+  function detachShared(){
+    if (sharedRef && sharedListener) sharedRef.off('value', sharedListener);
+    sharedListener = null;
   }
 
   function isEditingCell(){
@@ -1216,7 +1160,7 @@ function normalizeCellValue(val){
   }
 
   function applyRemoteData(raw, silent=false){
-    state = normalizeState(raw);
+    state = normalizeState(raw); state.year = currentYear;
     employees = state.employees.slice();
     render();
     if (isAdmin()) renderAdminEmployees();
@@ -1228,10 +1172,24 @@ function normalizeCellValue(val){
     }
   }
 
+  function subscribeShared(){
+    if(!sharedRef || !currentUser) return;
+    detachShared();
+    sharedListener = (snap) => {
+      const val = snap.val() || {};
+      sharedSettings = {
+        adminPassword: (typeof val.adminPassword === 'string' && val.adminPassword.length >= 6) ? val.adminPassword : null,
+        globalAccessPassword: typeof val.globalAccessPassword === 'string' ? val.globalAccessPassword : ''
+      };
+      updateSecurityStatusUI();
+      enforceAccessGate();
+    };
+    sharedRef.on('value', sharedListener);
+  }
+
   function subscribeRemote(){
     if (!dbRef || !currentUser) return;
     detachRemote();
-    dbRefActive = dbRef;
     dbListener = (snap) => {
       const val = snap.val();
       const normalized = normalizeState(val);
@@ -1241,7 +1199,7 @@ function normalizeCellValue(val){
       }
       applyRemoteData(normalized, true);
     };
-    dbRefActive.on('value', dbListener, (err) => {
+    dbRef.on('value', dbListener, (err) => {
       console.error(err);
       showToast('błąd odczytu', false);
       alert('Błąd odczytu z Firebase: ' + (err.message || err));
@@ -1251,7 +1209,7 @@ function normalizeCellValue(val){
   function cloneForSave(){
     // Deep clone to plain JSON
     return {
-      year: YEAR,
+      year: currentYear,
       updatedAt: Date.now(),
       employees: employees.slice(),
       months: JSON.parse(JSON.stringify(state.months || {})),
@@ -1283,6 +1241,17 @@ function normalizeCellValue(val){
       });
   }
 
+  function saveSharedSettings(showAlert=false){
+    if (!sharedRef || !currentUser) return Promise.reject(new Error('Not authenticated'));
+    const payload = {
+      adminPassword: (typeof sharedSettings.adminPassword === 'string' && sharedSettings.adminPassword.length >= 6) ? sharedSettings.adminPassword : null,
+      globalAccessPassword: typeof sharedSettings.globalAccessPassword === 'string' ? sharedSettings.globalAccessPassword : ''
+    };
+    return sharedRef.set(payload).then(() => {
+      if (showAlert) alert('Zapisano ustawienia zabezpieczeń ✅');
+    });
+  }
+
   function queueSave(delay=700){
     if (!remoteReady || !currentUser) return;
     clearTimeout(saveTimer);
@@ -1291,15 +1260,14 @@ function normalizeCellValue(val){
 
   // ====== Admin panel (local password, shared data) ======
   const ADMIN_PASS = "@Marketing1234";
-  const adminKey = () => `admin_${YEAR}_v1`; // sessionStorage: tylko ta karta
+  const adminKey = `admin_session_v2`; // sessionStorage
 
   function getAdminPassword(){
-    // Prefer password saved in settings (synced), fallback to built-in default
-    const p = (state && state.settings) ? state.settings.adminPassword : null;
+    const p = sharedSettings ? sharedSettings.adminPassword : null;
     return (typeof p === "string" && p.length >= 6) ? p : ADMIN_PASS;
   }
 
-  const accessKey = () => `access_${YEAR}_v1`; // localStorage
+  const accessKey = `app_access_v2`; // localStorage
 
   function accessToken(pw){
     try{
@@ -1311,15 +1279,15 @@ function normalizeCellValue(val){
   }
 
   function isGlobalAccessEnabled(){
-    const pw = (state && state.settings) ? (state.settings.globalAccessPassword || "") : "";
+    const pw = sharedSettings ? (sharedSettings.globalAccessPassword || "") : "";
     return typeof pw === "string" && pw.length >= 4;
   }
 
   function isAccessGranted(){
     if(!isGlobalAccessEnabled()) return true;
-    const pw = state.settings.globalAccessPassword || "";
+    const pw = (sharedSettings && sharedSettings.globalAccessPassword) ? sharedSettings.globalAccessPassword : "";
     const token = accessToken(pw);
-    return localStorage.getItem(accessKey()) === token;
+    return localStorage.getItem(accessKey) === token;
   }
 
   function showAccessModal(){
@@ -1359,11 +1327,11 @@ function normalizeCellValue(val){
   }
 
   function isAdmin(){
-    return sessionStorage.getItem(adminKey()) === "1";
+    return sessionStorage.getItem(adminKey) === "1";
   }
   function setAdmin(on){
-    if(on) sessionStorage.setItem(adminKey(), "1");
-    else sessionStorage.removeItem(adminKey());
+    if(on) sessionStorage.setItem(adminKey, "1");
+    else sessionStorage.removeItem(adminKey);
     refreshAdminUI();
   }
   function refreshAdminUI(){
@@ -1388,21 +1356,12 @@ function normalizeCellValue(val){
     setPicker(els.adminColorO, cc.O);
     setPicker(els.adminColorL4, cc.L4);
     setPicker(els.adminColorUT, cc.UT);
+    setPicker(els.adminColorT, cc.T);
+    setPicker(els.adminColorZ, cc.Z);
     if(els.adminResetColors) els.adminResetColors.disabled = !on;
-    
-    // Year lock
-    if(els.adminYearLock){
-      state.settings = state.settings || {};
-      els.adminYearLock.checked = !!state.settings.yearLocked;
-      els.adminYearLock.disabled = !on;
-      els.adminYearLock.onchange = () => {
-        state.settings.yearLocked = !!els.adminYearLock.checked;
-        state.updatedAt = Date.now();
-        render(); // preview
-        if(els.adminSettingsSaved) els.adminSettingsSaved.textContent = 'Niezapisane zmiany…';
-      };
-    }
-if(els.adminLocksList){
+    if(els.adminLockYearSel){ els.adminLockYearSel.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join(''); els.adminLockYearSel.disabled = !on; }
+    if(els.adminYearLockChk){ els.adminYearLockChk.checked = !!(state.settings && state.settings.yearLocked); els.adminYearLockChk.disabled = !on; }
+    if(els.adminLocksList){
       els.adminLocksList.innerHTML = "";
       state.settings = state.settings || {};
       state.settings.monthLocks = state.settings.monthLocks || {};
@@ -1420,7 +1379,7 @@ if(els.adminLocksList){
         cb.style.height='18px';
         cb.style.accentColor='#5aa7ff';
         cb.checked = !!state.settings.monthLocks[mm];
-        cb.disabled = (!on) || (state.settings && state.settings.yearLocked);
+        cb.disabled = !on;
         cb.addEventListener('change', ()=>{
           if(!isAdmin()) return;
           state.settings = state.settings || {};
@@ -1646,11 +1605,11 @@ if(typed !== phrase){
           return;
         }
 
-        state.settings.adminPassword = newP;
+        sharedSettings.adminPassword = newP;
         if(els.secAdminMsg) els.secAdminMsg.textContent = "Zmieniono hasło admina ✅";
         els.secAdminOld.value = ""; els.secAdminNew.value = ""; els.secAdminNew2.value = "";
         // Persist immediately
-        try{ await saveRemote(true); }catch(e){}
+        try{ await saveSharedSettings(true); }catch(e){}
       });
     }
 
@@ -1666,12 +1625,12 @@ if(typed !== phrase){
           els.secGlobalMsg.textContent = "Hasło musi mieć min. 4 znaki (lub użyj 'Wyłącz ochronę hasłem').";
           return;
         }
-        state.settings.globalAccessPassword = pw;
-        localStorage.removeItem(accessKey()); // require re-auth after change
+        sharedSettings.globalAccessPassword = pw;
+        localStorage.removeItem(accessKey); // require re-auth after change
         updateSecurityStatusUI();
         els.secGlobalMsg.textContent = "Ustawiono / zmieniono hasło dostępu ✅";
         els.secGlobalNew.value = "";
-        try{ await saveRemote(true); }catch(e){}
+        try{ await saveSharedSettings(true); }catch(e){}
         // Enforce new gate now (admin also)
         enforceAccessGate();
       });
@@ -1684,8 +1643,8 @@ if(typed !== phrase){
           openAdminModal();
           return;
         }
-        state.settings.globalAccessPassword = "";
-        localStorage.removeItem(accessKey());
+        sharedSettings.globalAccessPassword = "";
+        localStorage.removeItem(accessKey);
         updateSecurityStatusUI();
         els.secGlobalMsg.textContent = "Wyłączono ochronę hasłem ✅";
         try{ await saveRemote(true); }catch(e){}
@@ -1696,9 +1655,9 @@ if(typed !== phrase){
     if(els.accessOpenBtn){
       const tryOpen = ()=>{
         const typed = (els.accessPass.value || "").trim();
-        const real = (state.settings && state.settings.globalAccessPassword) ? state.settings.globalAccessPassword : "";
+        const real = (sharedSettings && sharedSettings.globalAccessPassword) ? sharedSettings.globalAccessPassword : "";
         if(typed === real){
-          localStorage.setItem(accessKey(), accessToken(real));
+          localStorage.setItem(accessKey, accessToken(real));
           els.accessMsg.style.display = "none";
           hideAccessModal();
           if(els.tableWrap) els.tableWrap.style.filter = "";
@@ -1755,13 +1714,15 @@ if(typed !== phrase){
       attachColorPicker(els.adminColorO, 'O');
       attachColorPicker(els.adminColorL4, 'L4');
       attachColorPicker(els.adminColorUT, 'UT');
+      attachColorPicker(els.adminColorT, 'T');
+      attachColorPicker(els.adminColorZ, 'Z');
 
       if(els.adminResetColors){
         els.adminResetColors.addEventListener('click', ()=>{
           if(!isAdmin()) return;
           const def = defaultState().settings.codeColors;
           state.settings = state.settings || {};
-          state.settings.codeColors = { U: def.U, O: def.O, L4: def.L4, UT: def.UT };
+          state.settings.codeColors = { U: def.U, O: def.O, L4: def.L4, UT: def.UT, T: def.T, Z: def.Z };
           refreshAdminUI();
           markDirty();
         });
@@ -1871,7 +1832,7 @@ if(typed !== phrase){
     // Request focus by next/prev day number (works across blocks 1–16 / 17–31 too)
     const dir = e.shiftKey ? -1 : 1;
     const nextDay = d + dir;
-    const dim = daysInMonth(YEAR, m);
+    const dim = daysInMonth(currentYear, m);
 
     if(isMonthLocked(m)){
       showToast("Ten miesiąc jest zamknięty. Odblokuj go w panelu admina.");
@@ -1891,14 +1852,14 @@ if(typed !== phrase){
       showToast("Kliknij najpierw komórkę w tabeli (żeby wybrać pracownika i miesiąc).");
       return;
     }
-    const dim = daysInMonth(YEAR, __lastCell.month);
+    const dim = daysInMonth(currentYear, __lastCell.month);
     const d = Math.min(Math.max(__lastCell.day || 1, 1), dim);
     if(els.bulkFrom) { els.bulkFrom.max = String(dim); els.bulkFrom.value = String(d); }
     if(els.bulkTo) { els.bulkTo.max = String(dim); els.bulkTo.value = String(d); }
     if(els.bulkVal) { els.bulkVal.value = ""; els.bulkVal.focus(); }
     if(els.bulkHint){
       const locked = isMonthLocked(__lastCell.month);
-      els.bulkHint.innerHTML = `Pracownik: <b>${__lastCell.emp}</b> • Miesiąc: <b>${monthNames[__lastCell.month-1]} ${YEAR}</b>` + (locked ? ` • <b style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</b>` : ``);
+      els.bulkHint.innerHTML = `Pracownik: <b>${__lastCell.emp}</b> • Miesiąc: <b>${monthNames[__lastCell.month-1]} ${currentYear}</b>` + (locked ? ` • <b style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</b>` : ``);
     }
     if(els.bulkApplyBtn){
       els.bulkApplyBtn.disabled = isMonthLocked(__lastCell.month);
@@ -1915,7 +1876,7 @@ if(typed !== phrase){
     if(!__lastCell) return;
     const emp = __lastCell.emp;
     const m = __lastCell.month;
-    const dim = daysInMonth(YEAR, m);
+    const dim = daysInMonth(currentYear, m);
 
     if(isMonthLocked(m)){
       showToast("Ten miesiąc jest zamknięty. Odblokuj go w panelu admina.");
@@ -1998,7 +1959,8 @@ if(typed !== phrase){
   if (els.fbLoginBtn) {
     els.fbLoginBtn.addEventListener('click', async () => {
       if (!auth) {
-        initFirebase();
+        populateYearSelectors();
+  initFirebase();
         return;
       }
       const email = (els.fbEmail?.value || '').trim();
@@ -2044,7 +2006,7 @@ if(typed !== phrase){
     let plus=0, minus=0, saldo=0;
     for(const emp of employees){
       const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
-      const dim = daysInMonth(YEAR,m);
+      const dim = daysInMonth(currentYear,m);
       for(let d=1; d<=dim; d++){
         const v = parseNum(arr[d-1]);
         if(v>0) plus += v;
@@ -2059,7 +2021,7 @@ if(typed !== phrase){
     let plus=0, minus=0, saldo=0;
     for(let m=1;m<=12;m++){
       const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
-      const dim = daysInMonth(YEAR,m);
+      const dim = daysInMonth(currentYear,m);
       for(let d=1; d<=dim; d++){
         const v = parseNum(arr[d-1]);
         if(v>0) plus += v;
@@ -2069,95 +2031,12 @@ if(typed !== phrase){
     }
     return { plus, minus, saldo, status: statusFromSaldo(saldo) };
   }
-
-  function yearTotalsForEmpFromData(y, data, emp){
-    let plus=0, minus=0, saldo=0;
-    const months = (data && data.months) ? data.months : {};
-    for(let m=1;m<=12;m++){
-      const arr = (months[m] && months[m][emp]) ? months[m][emp] : Array(31).fill("");
-      const dim = daysInMonth(y,m);
-      for(let d=1; d<=dim; d++){
-        const v = parseNum(arr[d-1]);
-        if(v>0) plus += v;
-        if(v<0) minus += (-v);
-        saldo += v;
-      }
-    }
-    return { plus, minus, saldo, status: statusFromSaldo(saldo) };
-  }
-
-  async function loadPeriodSummary(){
-    const msg = document.getElementById('periodSummaryMsg');
-    const wrap = document.getElementById('periodSummaryWrap');
-    if (msg) msg.textContent = '';
-    if (wrap) wrap.innerHTML = '';
-
-    if (!db || !currentUser) {
-      if (msg) msg.textContent = 'Zaloguj się do chmury, aby wczytać podsumowanie okresu.';
-      showAuthModal();
-      showAuthMsg('Zaloguj się do Firebase, aby wczytać podsumowanie okresu.', false);
-      return;
-    }
-
-    if (msg) msg.textContent = 'Wczytywanie…';
-    try{
-      const years = YEARS.slice();
-      const snaps = await Promise.all(years.map(y => db.ref(`nadgodziny/${y}/app`).once('value').then(s=>[y,s.val()])));
-      // union employees across years
-      const empSet = new Set();
-      for (const [y, data] of snaps){
-        const list = (data && Array.isArray(data.employees)) ? data.employees : [];
-        list.forEach(e => empSet.add(e));
-        // also include keys from months in case employees list missing
-        if (data && data.months){
-          for (const m of Object.keys(data.months)){
-            const mm = data.months[m] || {};
-            Object.keys(mm).forEach(e => empSet.add(e));
-          }
-        }
-      }
-      const emps = sortEmployees(Array.from(empSet));
-      const rows = emps.map(emp => {
-        let saldo=0, plus=0, minus=0;
-        for (const [y,data] of snaps){
-          const t = yearTotalsForEmpFromData(y, data||{}, emp);
-          saldo += t.saldo; plus += t.plus; minus += t.minus;
-        }
-        return { emp, saldo, plus, minus, status: statusFromSaldo(saldo) };
-      });
-
-      // build table
-      const table = document.createElement('table');
-      table.className = 'year-summary-table';
-      table.style.marginTop = '8px';
-      table.innerHTML = `
-        <colgroup><col style="width:320px"><col style="width:190px"><col style="width:190px"></colgroup>
-        <thead><tr><th>Imię i nazwisko</th><th>Saldo (${YEAR_MIN}–${YEAR_MAX})</th><th>Status</th></tr></thead>
-        <tbody></tbody>
-      `;
-      const tbody = table.querySelector('tbody');
-      for (const r of rows){
-        const tr = document.createElement('tr');
-        const td1 = document.createElement('td'); td1.className='name'; td1.innerHTML = `<b>${r.emp}</b>`; tr.appendChild(td1);
-        const td2 = document.createElement('td'); td2.className='sum'; td2.textContent = formatNum(r.saldo); tr.appendChild(td2);
-        const td3 = document.createElement('td'); td3.className = 'status ' + clsFromStatus(r.status); td3.textContent = r.status; tr.appendChild(td3);
-        tbody.appendChild(tr);
-      }
-      if (wrap) wrap.appendChild(table);
-      if (msg) msg.textContent = `Gotowe (${YEARS.length} lat).`;
-    }catch(e){
-      console.error(e);
-      if (msg) msg.textContent = 'Błąd wczytywania podsumowania.';
-      alert('Nie udało się wczytać podsumowania okresu: ' + (e.message || e));
-    }
-  }
-
 
 
   function collectAbsenceEntries(){
     const out = [];
     for(let m=1;m<=12;m++){
-      const dim = daysInMonth(YEAR,m);
+      const dim = daysInMonth(currentYear,m);
       for(const emp of employees){
         const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
         for(let d=1; d<=dim; d++){
@@ -2168,8 +2047,8 @@ if(typed !== phrase){
             code: raw,
             month: m,
             day: d,
-            label: `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${YEAR}`,
-            weekday: weekdayPL(YEAR,m,d)
+            label: `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${currentYear}`,
+            weekday: weekdayPL(currentYear,m,d)
           });
         }
       }
@@ -2185,7 +2064,7 @@ if(typed !== phrase){
   function absenceCountsForEmp(emp){
     const counts = { U:0, O:0, L4:0, UT:0, total:0 };
     for(let m=1;m<=12;m++){
-      const dim = daysInMonth(YEAR,m);
+      const dim = daysInMonth(currentYear,m);
       const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
       for(let d=1; d<=dim; d++){
         const v = normalizeCellValue(arr[d-1]);
@@ -2206,7 +2085,7 @@ if(typed !== phrase){
       const locked = isMonthLocked(m);
       btn.className = "mbtn" + (m===currentMonth && currentView==="month" ? " active":"") + (locked ? " locked":"");
       btn.type="button";
-      btn.innerHTML = `<span><b>${monthNames[m-1]} ${YEAR}</b></span>`;
+      btn.innerHTML = `<span><b>${monthNames[m-1]} ${currentYear}</b></span>`;
       btn.addEventListener('click', ()=>{
         currentMonth = m;
         currentView = "month";
@@ -2224,7 +2103,7 @@ if(typed !== phrase){
 
   function calcMonthTotalsForEmp(m, emp){
     const arr = (state.months[m] && state.months[m][emp]) ? state.months[m][emp] : Array(31).fill("");
-    const dim = daysInMonth(YEAR,m);
+    const dim = daysInMonth(currentYear,m);
     let plus=0, minus=0, saldo=0;
     for(let d=1; d<=dim; d++){
       const v=parseNum(arr[d-1]);
@@ -2238,9 +2117,9 @@ if(typed !== phrase){
 
   function renderMonth(){
     const m = currentMonth;
-    const dim = daysInMonth(YEAR,m);
+    const dim = daysInMonth(currentYear,m);
     const locked = isMonthLocked(m);
-    els.mainTitle.textContent = `${monthNames[m-1]} ${YEAR}` + (locked ? `  🔒 (zamknięty)` : ``);
+    els.mainTitle.textContent = `${monthNames[m-1]} ${currentYear}` + (locked ? `  🔒 (zamknięty)` : ``);
     setMonthPreview();
 
     const blocks = [
@@ -2256,7 +2135,7 @@ if(typed !== phrase){
 
       const bh = document.createElement('div');
       bh.className = "blockhead";
-      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b>, <b>U</b>, <b>O</b>, <b>L4</b>, <b>UT</b>` + (locked ? ` • <span style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</span>` : ``) + `</div><div>zapis do chmury po wyjściu z pola</div>`;
+      bh.innerHTML = `<div><b>${block.label}</b> • wpisuj: <b>10</b>, <b>-2</b>, <b>0,5</b>, <b>U</b>, <b>O</b>, <b>L4</b>, <b>UT</b>, <b>T</b>, <b>Z</b>` + (locked ? ` • <span style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</span>` : ``) + `</div><div>zapis do chmury po wyjściu z pola</div>`;
       mb.appendChild(bh);
 
       const table = document.createElement('table');
@@ -2269,9 +2148,9 @@ if(typed !== phrase){
         const th=document.createElement('th');
         th.textContent=d;
         if (d<=dim){
-          const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(YEAR,m,d) : "";
+          const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(currentYear,m,d) : "";
           if (hn) { th.classList.add('is-holiday-head'); th.title = hn; }
-          else if (isWeekend(YEAR,m,d)) { th.classList.add('is-weekend-head'); }
+          else if (isWeekend(currentYear,m,d)) { th.classList.add('is-weekend-head'); }
         }
         tr1.appendChild(th);
       }
@@ -2285,11 +2164,11 @@ if(typed !== phrase){
       tr2.appendChild(document.createElement('th'));
       for(let d=block.start; d<=block.end; d++){
         const th=document.createElement('th');
-        th.textContent = (d<=dim) ? weekdayPL(YEAR,m,d) : "—";
+        th.textContent = (d<=dim) ? weekdayPL(currentYear,m,d) : "—";
         if (d<=dim){
-          const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(YEAR,m,d) : "";
+          const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(currentYear,m,d) : "";
           if (hn) { th.classList.add('is-holiday-head'); th.title = hn; }
-          else if (isWeekend(YEAR,m,d)) { th.classList.add('is-weekend-head'); }
+          else if (isWeekend(currentYear,m,d)) { th.classList.add('is-weekend-head'); }
         }
         tr2.appendChild(th);
       }
@@ -2315,9 +2194,9 @@ if(typed !== phrase){
         for(let d=block.start; d<=block.end; d++){
           const td=document.createElement('td'); td.className="daycell";
           if (d<=dim){
-            const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(YEAR,m,d) : "";
+            const hn = (state.settings && state.settings.holidaysEnabled) ? holidayName(currentYear,m,d) : "";
             if (hn) { td.classList.add('is-holiday'); }
-            else if (isWeekend(YEAR,m,d)) { td.classList.add('is-weekend'); }
+            else if (isWeekend(currentYear,m,d)) { td.classList.add('is-weekend'); }
           }
           const input=document.createElement('input');
           input.className="in";
@@ -2330,7 +2209,7 @@ if(typed !== phrase){
           input.dataset.month = String(m);
           input.dataset.day = String(d);
           if (d<=dim && state.settings && state.settings.holidaysEnabled){
-            const hn = holidayName(YEAR,m,d);
+            const hn = holidayName(currentYear,m,d);
             if (hn) input.title = hn;
           }
           input.value = arr[d-1] ?? "";
@@ -2387,7 +2266,7 @@ if(typed !== phrase){
   }
 
   function renderSummary(){
-    els.mainTitle.textContent = `Podsumowanie ${YEAR}`;
+    els.mainTitle.textContent = `Podsumowanie ${currentYear}`;
     setMonthPreview();
 
     const mb = document.createElement('div');
@@ -2425,32 +2304,13 @@ if(typed !== phrase){
     table.appendChild(tbody);
     mb.appendChild(table);
 
-    // ====== Podsumowanie całego okresu (wymaga dostępu do chmury) ======
-    const period = document.createElement('div');
-    period.className = 'period-summary';
-    period.style.marginTop = '14px';
-    period.innerHTML = `
-      <details class="admin-accordion" open>
-        <summary><b>Podsumowanie całego okresu</b> <span class="hint">(${YEAR_MIN}–${YEAR_MAX})</span></summary>
-        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-          <button class="btn" id="btnLoadPeriodSummary" type="button">Odśwież podsumowanie okresu</button>
-          <span id="periodSummaryMsg" class="hint"></span>
-        </div>
-        <div id="periodSummaryWrap" style="margin-top:10px"></div>
-      </details>
-    `;
-    mb.appendChild(period);
-
     els.tableWrap.innerHTML="";
     els.tableWrap.appendChild(mb);
-
-    const btn = document.getElementById('btnLoadPeriodSummary');
-    if (btn) btn.onclick = () => loadPeriodSummary();
   }
 
 
   function renderAbsenceSummary(){
-    els.mainTitle.textContent = `Podsumowanie urlopy ${YEAR}`;
+    els.mainTitle.textContent = `Podsumowanie urlopy ${currentYear}`;
     setMonthPreview();
 
     const host = document.createElement('div');
@@ -2472,7 +2332,7 @@ if(typed !== phrase){
 
     const thead1=document.createElement('thead');
     const trA=document.createElement('tr');
-    ["Imię i nazwisko","U","O","L4","UT"].forEach((t,idx)=>{
+    ["Imię i nazwisko","U","O","L4","UT","T","Z"].forEach((t,idx)=>{
       const th=document.createElement('th');
       th.textContent=t;
       if(idx>0) th.className='sumc';
@@ -2501,7 +2361,7 @@ if(typed !== phrase){
       tdN.appendChild(btn);
       tr.appendChild(tdN);
 
-      ["U","O","L4","UT"].forEach(code=>{
+      ["U","O","L4","UT","T","Z"].forEach(code=>{
         const td=document.createElement('td');
         td.className="sum";
         const val = c[code] || 0;
@@ -2598,6 +2458,35 @@ if(typed !== phrase){
     else renderSummary();
   }
 
+  function populateYearSelectors(){
+    if(els.yearSel) els.yearSel.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join('');
+    if(els.adminLockYearSel) els.adminLockYearSel.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join('');
+  }
+  async function switchYear(year){
+    year = Number(year);
+    if(!YEARS.includes(year) || year===currentYear) return;
+    detachRemote();
+    currentYear = year;
+    localStorage.setItem('nadgodziny_current_year', String(currentYear));
+    els.yearLabel.textContent = currentYear;
+    const sub = document.querySelector('.title .sub');
+    if(sub) sub.innerHTML = `Wersja online (Firebase) • Rok <b>${currentYear}</b> • Wspólny zapis/odczyt dla całego działu`;
+    dbRef = db ? db.ref(YEAR_DB_PATH(currentYear)) : null;
+    state = defaultState();
+    employees = state.employees.slice();
+    populateYearSelectors();
+    render();
+    if(currentUser && dbRef) subscribeRemote();
+  }
+  if(els.yearSel) els.yearSel.addEventListener('change', (e)=> switchYear(e.target.value));
+  if(els.adminLockYearSel) els.adminLockYearSel.addEventListener('change', (e)=> switchYear(e.target.value));
+  if(els.adminYearLockChk) els.adminYearLockChk.addEventListener('change', ()=>{
+    if(!isAdmin()) return;
+    state.settings.yearLocked = !!els.adminYearLockChk.checked;
+    if(state.settings.yearLocked){ for(let mm=1; mm<=12; mm++) state.settings.monthLocks[mm]=true; }
+    render();
+    if(els.adminSettingsSaved) els.adminSettingsSaved.textContent = 'Niezapisane zmiany…';
+  });
   els.viewSel.addEventListener('change', ()=>{
     currentView = els.viewSel.value;
     render();
