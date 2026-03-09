@@ -714,6 +714,8 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
 <script>
 
 (() => {
@@ -3403,47 +3405,85 @@ if(typed !== phrase){
     XLSX.writeFile(wb, file);
   }
   function exportDatasetToPdf(dataset){
-    if(!(window.jspdf && window.jspdf.jsPDF)) throw new Error('Biblioteka PDF nie została załadowana.');
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(18);
-    doc.text('Raport nadgodzin / nieobecności', 40, 42);
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(10);
-    doc.text(`Zakres: ${dataset.meta.label}`, 40, 62);
-    doc.text(`Daty: ${dataset.meta.rangeStart} — ${dataset.meta.rangeEnd}`, 40, 76);
-    doc.text(`Wygenerowano: ${dataset.meta.generatedAt}`, 40, 90);
+    if(!(window.pdfMake && window.pdfMake.createPdf)) throw new Error('Biblioteka PDF nie została załadowana.');
     const codeHeaders = dataset.codes.slice();
-    const head = [['Pracownik', ...codeHeaders, 'Saldo', 'Status']];
-    const body = dataset.summaryRows.map(r => [r['Pracownik'], ...codeHeaders.map(k => String(r[k] ?? 0)), String(r['Saldo']), r['Status']]);
-    doc.autoTable({
-      startY: 108,
-      head,
-      body,
-      styles: { fontSize: 8, cellPadding: 4 },
-      headStyles: { fillColor: [34, 52, 86] },
-      alternateRowStyles: { fillColor: [245, 248, 252] },
-      margin: { left: 40, right: 40 }
-    });
+    const summaryHead = ['Pracownik', ...codeHeaders, 'Saldo', 'Status'];
+    const summaryBody = [summaryHead].concat(
+      dataset.summaryRows.map(r => [
+        String(r['Pracownik'] ?? ''),
+        ...codeHeaders.map(k => String(r[k] ?? 0)),
+        String(r['Saldo'] ?? 0),
+        String(r['Status'] ?? '')
+      ])
+    );
     const detailRows = dataset.rows.filter(r => String(r['Wartość'] || '').trim() !== '');
     const capped = detailRows.slice(0, 350);
-    let startY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 18 : 140;
-    if(startY > 480){ doc.addPage(); startY = 40; }
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(12);
-    doc.text(`Wpisy niepuste${detailRows.length > capped.length ? ` (pierwsze ${capped.length} z ${detailRows.length})` : ''}`, 40, startY);
-    doc.autoTable({
-      startY: startY + 10,
-      head: [['Data','Pracownik','Wartość','Opis','Święto'] ],
-      body: capped.map(r => [r['Data'], r['Pracownik'], r['Wartość'], r['Opis'], r['Święto'] || '']),
-      styles: { fontSize: 7, cellPadding: 3 },
-      headStyles: { fillColor: [34, 52, 86] },
-      margin: { left: 40, right: 40 }
-    });
+    const detailHead = ['Data','Pracownik','Wartość','Opis','Święto'];
+    const detailBody = [detailHead].concat(
+      capped.map(r => [
+        String(r['Data'] ?? ''),
+        String(r['Pracownik'] ?? ''),
+        String(r['Wartość'] ?? ''),
+        String(r['Opis'] ?? ''),
+        String(r['Święto'] ?? '')
+      ])
+    );
+    const docDefinition = {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      pageMargins: [32, 28, 32, 28],
+      defaultStyle: { font: 'Roboto', fontSize: 9 },
+      styles: {
+        title: { fontSize: 22, bold: true, characterSpacing: 1.2, margin: [0, 0, 0, 8] },
+        meta: { fontSize: 11, margin: [0, 0, 0, 2] },
+        section: { fontSize: 15, bold: true, margin: [0, 16, 0, 8] },
+        tableHeader: { bold: true, color: '#ffffff', fillColor: '#223456', fontSize: 10 }
+      },
+      content: [
+        { text: 'Raport nadgodzin / nieobecności', style: 'title' },
+        { text: `Zakres: ${dataset.meta.label}`, style: 'meta' },
+        { text: `Daty: ${dataset.meta.rangeStart} — ${dataset.meta.rangeEnd}`, style: 'meta' },
+        { text: `Wygenerowano: ${dataset.meta.generatedAt}`, style: 'meta', margin: [0, 0, 0, 12] },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['*', ...codeHeaders.map(()=>'auto'), 'auto', 'auto'],
+            body: summaryBody
+          },
+          layout: {
+            fillColor: function(rowIndex){ return rowIndex === 0 ? '#223456' : (rowIndex % 2 === 1 ? '#eef2f8' : null); },
+            hLineColor: function(){ return '#d7deea'; },
+            vLineColor: function(){ return '#d7deea'; },
+            paddingLeft: function(){ return 6; },
+            paddingRight: function(){ return 6; },
+            paddingTop: function(){ return 4; },
+            paddingBottom: function(){ return 4; }
+          }
+        },
+        { text: `Wpisy niepuste${detailRows.length > capped.length ? ` (pierwsze ${capped.length} z ${detailRows.length})` : ''}`, style: 'section' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['auto', '*', 'auto', '*', '*'],
+            body: detailBody
+          },
+          layout: {
+            fillColor: function(rowIndex){ return rowIndex === 0 ? '#223456' : (rowIndex % 2 === 1 ? '#eef2f8' : null); },
+            hLineColor: function(){ return '#d7deea'; },
+            vLineColor: function(){ return '#d7deea'; },
+            paddingLeft: function(){ return 6; },
+            paddingRight: function(){ return 6; },
+            paddingTop: function(){ return 3; },
+            paddingBottom: function(){ return 3; }
+          }
+        }
+      ]
+    };
+    // apply header style row manually
+    docDefinition.content[4].table.body[0] = docDefinition.content[4].table.body[0].map(v => ({ text: v, style: 'tableHeader' }));
+    docDefinition.content[6].table.body[0] = docDefinition.content[6].table.body[0].map(v => ({ text: v, style: 'tableHeader' }));
     const file = `nadgodziny_${dataset.meta.mode}_${dataset.meta.rangeStart}_${dataset.meta.rangeEnd}.pdf`;
-    doc.save(file);
+    pdfMake.createPdf(docDefinition).download(file);
   }
   async function exportJsonBackup(){
     const yearsMap = await fetchYearsMap(YEARS);
