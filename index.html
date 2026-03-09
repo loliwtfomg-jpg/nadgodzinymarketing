@@ -510,7 +510,7 @@
             <label for="adminHolidaysToggle" style="cursor:pointer;user-select:none">Podświetl święta i dni wolne (weekendy + ustawowe)</label>
           </div>
 
-          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
+          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
           <div class="admin-colors" style="display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:0 0 14px 0">
             <div style="color:var(--muted);font-size:12px">U (urlop)</div>
             <input id="adminColorU" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
@@ -535,7 +535,7 @@
             <span style="color:var(--muted);font-size:12px">Zmiany są podglądem — zapisz ustawienia, aby je utrwalić.</span>
           </div></div></details>
 
-          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open>
+          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
             <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
               <span style="font-weight:700">Zamknięcia miesięcy i roku</span>
               <span style="color:var(--muted); font-size:12px">osobno dla każdego roku</span>
@@ -596,8 +596,8 @@
 
           <details id="adminExportDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
             <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
-              <span style="font-weight:700">Eksport danych</span>
-              <span style="color:var(--muted); font-size:12px">XLSX / PDF / JSON</span>
+              <span style="font-weight:700">Eksport / backup</span>
+              <span style="color:var(--muted); font-size:12px">XLSX • PDF • JSON • backup</span>
             </summary>
             <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
               <div class="modal-sub" style="margin:0 0 10px 0">Eksport do Excela i PDF z kilkoma wariantami zakresu</div>
@@ -647,15 +647,10 @@
                 <button id="exportJsonBackupBtn" type="button" class="btn">Pobierz JSON backup</button>
                 <span id="exportStatus" style="color:var(--muted); font-size:12px"></span>
               </div>
-            </div>
-          </details>
+            
 
-          <details id="adminBackupsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
-            <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
-              <span style="font-weight:700">Backupy / archiwum</span>
-              <span style="color:var(--muted); font-size:12px">podgląd / przywracanie</span>
-            </summary>
-            <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
+              <div class="modal-sub" style="margin:16px 0 8px 0">Backupy / archiwum</div>
+              <div class="admin-note" style="margin:0 0 12px 0">Możesz utworzyć backup, zaimportować plik JSON, podejrzeć starszą wersję danych, przywrócić ją do chmury albo usunąć z lokalnego archiwum tej przeglądarki.</div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px">
                 <button id="backupCreateBtn" type="button" class="btn-primary">Utwórz backup teraz</button>
                 <button id="backupImportBtn" type="button" class="btn">Importuj backup JSON</button>
@@ -664,10 +659,9 @@
               </div>
               <div id="backupStatus" style="color:var(--muted); font-size:12px; margin-bottom:10px"></div>
               <div id="backupList" style="display:grid; gap:10px"></div>
-            </div>
+</div>
           </details>
-
-<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
+<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
 
           <div class="admin-grid">
             <div class="admin-head">Pracownicy</div>
@@ -737,6 +731,26 @@
     </div>
   </div>
 
+
+
+
+
+  <!-- Global access (file password) modal -->
+  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
+    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
+        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
+      </div>
+      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
+        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
+      </div>
+      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
+      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
+      </div>
+    </div>
+  </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -3668,23 +3682,5 @@ if(typed !== phrase){
 })();
 
 </script>
-
-
-  <!-- Global access (file password) modal -->
-  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
-    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
-        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
-      </div>
-      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
-        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
-      </div>
-      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
-      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
-        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
