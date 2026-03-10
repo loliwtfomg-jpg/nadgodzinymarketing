@@ -510,7 +510,7 @@
             <label for="adminHolidaysToggle" style="cursor:pointer;user-select:none">Podświetl święta i dni wolne (weekendy + ustawowe)</label>
           </div>
 
-          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
+          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
           <div class="admin-colors" style="display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:0 0 14px 0">
             <div style="color:var(--muted);font-size:12px">U (urlop)</div>
             <input id="adminColorU" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
@@ -535,7 +535,7 @@
             <span style="color:var(--muted);font-size:12px">Zmiany są podglądem — zapisz ustawienia, aby je utrwalić.</span>
           </div></div></details>
 
-          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
+          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open>
             <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
               <span style="font-weight:700">Zamknięcia miesięcy i roku</span>
               <span style="color:var(--muted); font-size:12px">osobno dla każdego roku</span>
@@ -596,8 +596,8 @@
 
           <details id="adminExportDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
             <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
-              <span style="font-weight:700">Eksport / backup</span>
-              <span style="color:var(--muted); font-size:12px">XLSX • PDF • JSON • backup</span>
+              <span style="font-weight:700">Eksport danych</span>
+              <span style="color:var(--muted); font-size:12px">XLSX / PDF / JSON</span>
             </summary>
             <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
               <div class="modal-sub" style="margin:0 0 10px 0">Eksport do Excela i PDF z kilkoma wariantami zakresu</div>
@@ -647,10 +647,15 @@
                 <button id="exportJsonBackupBtn" type="button" class="btn">Pobierz JSON backup</button>
                 <span id="exportStatus" style="color:var(--muted); font-size:12px"></span>
               </div>
-            
+            </div>
+          </details>
 
-              <div class="modal-sub" style="margin:16px 0 8px 0">Backupy / archiwum</div>
-              <div class="admin-note" style="margin:0 0 12px 0">Możesz utworzyć backup, zaimportować plik JSON, podejrzeć starszą wersję danych, przywrócić ją do chmury albo usunąć z lokalnego archiwum tej przeglądarki.</div>
+          <details id="adminBackupsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
+            <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
+              <span style="font-weight:700">Backupy / archiwum</span>
+              <span style="color:var(--muted); font-size:12px">podgląd / przywracanie</span>
+            </summary>
+            <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px">
                 <button id="backupCreateBtn" type="button" class="btn-primary">Utwórz backup teraz</button>
                 <button id="backupImportBtn" type="button" class="btn">Importuj backup JSON</button>
@@ -659,9 +664,10 @@
               </div>
               <div id="backupStatus" style="color:var(--muted); font-size:12px; margin-bottom:10px"></div>
               <div id="backupList" style="display:grid; gap:10px"></div>
-</div>
+            </div>
           </details>
-<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
+
+<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
 
           <div class="admin-grid">
             <div class="admin-head">Pracownicy</div>
@@ -732,26 +738,6 @@
   </div>
 
 
-
-
-
-  <!-- Global access (file password) modal -->
-  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
-    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
-        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
-      </div>
-      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
-        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
-      </div>
-      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
-      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
-        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
-      </div>
-    </div>
-  </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -778,12 +764,10 @@
           </div>
         </div>
         <div class="modal-body">
-          <input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none" />
-          <input type="password" autocomplete="new-password" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none" />
-          <label class="modal-label" for="fbEmail">Login</label>
-          <input id="fbEmail" class="modal-input" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="text" placeholder="Wpisz login" />
+          <label class="modal-label" for="fbEmail">E-mail</label>
+          <input id="fbEmail" class="modal-input" type="email" autocomplete="username" placeholder="np. marketing@..." />
           <label class="modal-label" for="fbPass" style="margin-top:10px">Hasło</label>
-          <input id="fbPass" class="modal-input" type="password" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Wpisz hasło" data-lpignore="true" data-1p-ignore="true" />
+          <input id="fbPass" class="modal-input" type="password" autocomplete="current-password" placeholder="Hasło konta działu" />
           <div id="fbAuthMsg" class="modal-msg" style="display:none"></div>
         </div>
         <div class="modal-actions">
@@ -794,43 +778,16 @@
   `);
 
   const defaultEmployees = [
-    "EMP-001",
-    "EMP-002",
-    "EMP-003",
-    "EMP-004",
-    "EMP-005",
-    "EMP-006",
-    "EMP-007",
-    "EMP-008",
-    "EMP-009",
+    "Anita Kos",
+    "Anita Bucka",
+    "Joanna Knycz",
+    "Agnieszka Panek",
+    "Marta Bogusz",
+    "Rafał Kukla",
+    "Maria Halotta",
+    "Zuzanna Jadczyk",
+    "Hania Danielczyk",
   ];
-  const LEGACY_EMPLOYEE_MAP = {
-    "Anita Kos": "EMP-001",
-    "Anita Bucka": "EMP-002",
-    "Joanna Knycz": "EMP-003",
-    "Agnieszka Panek": "EMP-004",
-    "Marta Bogusz": "EMP-005",
-    "Rafał Kukla": "EMP-006",
-    "Maria Halotta": "EMP-007",
-    "Zuzanna Jadczyk": "EMP-008",
-    "Hania Danielczyk": "EMP-009",
-  };
-  function anonymizeEmployeeName(name){
-    const key = String(name || '').trim();
-    return LEGACY_EMPLOYEE_MAP[key] || key;
-  }
-  function anonymizeEmployeeList(list){
-    return Array.from(new Set((list || []).map(anonymizeEmployeeName).filter(Boolean)));
-  }
-  function anonymizeMonthRows(monthObj){
-    const src = (monthObj && typeof monthObj === 'object') ? monthObj : {};
-    const out = {};
-    Object.entries(src).forEach(([emp, arr]) => {
-      const mapped = anonymizeEmployeeName(emp);
-      out[mapped] = Array.isArray(arr) ? arr.slice(0,31) : [];
-    });
-    return out;
-  }
 
   const els = {
     months: document.getElementById('months'),
@@ -984,9 +941,6 @@
     const wd = new Date(y, m-1, d).getDay();
     return ["Nd","Pn","Wt","Śr","Cz","Pt","So"][wd];
   }
-  function weekdayName(y,m,d){
-    return weekdayPL(y,m,d);
-  }
   function parseNum(val){
     if(val==null) return 0;
     let s = String(val).trim();
@@ -994,10 +948,6 @@
     s = s.replace(',', '.');
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
-  }
-
-  function parsePLNumber(val){
-    return parseNum(val);
   }
   const CODE_META = {
     U: { label: 'Urlop', cls: 'good' },
@@ -1312,7 +1262,7 @@ function normalizeCellValue(val){
     // Ensure optional fields
 
     const obj = (remoteObj && typeof remoteObj === 'object') ? remoteObj : {};
-    const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(anonymizeEmployeeList(obj.employees)) : base.employees.slice();
+    const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(obj.employees) : base.employees.slice();
 
     const out = {
       year: currentYear,
@@ -1346,7 +1296,7 @@ function normalizeCellValue(val){
 
     for(let m=1;m<=12;m++){
       out.months[m] = {};
-      const remoteMonth = anonymizeMonthRows((obj.months && obj.months[m]) ? obj.months[m] : {});
+      const remoteMonth = (obj.months && obj.months[m]) ? obj.months[m] : {};
       for (const emp of emps) {
         const arr = Array.isArray(remoteMonth[emp]) ? remoteMonth[emp].slice(0,31) : [];
         while (arr.length < 31) arr.push("");
@@ -1404,8 +1354,6 @@ function normalizeCellValue(val){
       els.fbAuthModal.style.display = 'flex';
       els.fbAuthModal.setAttribute('aria-hidden', 'false');
     }
-    if (els.fbEmail) els.fbEmail.value = '';
-    if (els.fbPass) els.fbPass.value = '';
     if (els.fbEmail) setTimeout(()=>els.fbEmail.focus(), 50);
   }
   function hideAuthModal(){
@@ -1448,7 +1396,7 @@ function normalizeCellValue(val){
           if (accountBtn) accountBtn.style.display = '';
           subscribeShared();
           subscribeRemote();
-          showToast('połączono', true);
+          showToast(`połączono (${currentUser.email || 'konto'})`, true);
         } else {
           remoteReady = false;
           detachRemote();
@@ -1532,7 +1480,7 @@ function normalizeCellValue(val){
     return {
       year: currentYear,
       updatedAt: Date.now(),
-      employees: anonymizeEmployeeList(employees.slice()),
+      employees: employees.slice(),
       months: JSON.parse(JSON.stringify(state.months || {})),
       settings: JSON.parse(JSON.stringify(state.settings || { holidaysEnabled: true }))
     };
@@ -2259,17 +2207,16 @@ if(typed !== phrase){
   initFirebase();
         return;
       }
-      const login = (els.fbEmail?.value || '').trim();
+      const email = (els.fbEmail?.value || '').trim();
       const pass = (els.fbPass?.value || '').trim();
-      if (!login || !pass) {
-        showAuthMsg('Wpisz login i hasło.', false);
+      if (!email || !pass) {
+        showAuthMsg('Wpisz e-mail i hasło.', false);
         return;
       }
       hideAuthMsg();
       els.fbLoginBtn.disabled = true;
       els.fbLoginBtn.textContent = 'Logowanie…';
       try {
-        const email = (login.toLowerCase() === 'marketing') ? 'marketing@davis.pl' : login;
         await auth.signInWithEmailAndPassword(email, pass);
       } catch (e) {
         console.error(e);
@@ -3721,5 +3668,23 @@ if(typed !== phrase){
 })();
 
 </script>
+
+
+  <!-- Global access (file password) modal -->
+  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
+    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
+        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
+      </div>
+      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
+        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
+      </div>
+      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
+      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
