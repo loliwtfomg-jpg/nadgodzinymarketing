@@ -26,6 +26,10 @@
       --code-l4-border: rgba(214,89,49,.52);
       --code-ut-bg: rgba(31,143,78,.16);
       --code-ut-border: rgba(31,143,78,.45);
+      --code-t-bg: rgba(255,179,71,.18);
+      --code-t-border: rgba(255,179,71,.50);
+      --code-z-bg: rgba(70,130,180,.18);
+      --code-z-border: rgba(70,130,180,.50);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -229,8 +233,8 @@
     .in.code-o{background:var(--code-o-bg); border-color:var(--code-o-border); color:#efe5ff; font-weight:800}
     .in.code-l4{background:var(--code-l4-bg); border-color:var(--code-l4-border); color:#ffe7dc; font-weight:800}
     .in.code-ut{background:var(--code-ut-bg); border-color:var(--code-ut-border); color:#ddffea; font-weight:800}
-    .in.code-t{background:rgba(255,179,71,.18); border-color:rgba(255,179,71,.50); color:#fff0cf; font-weight:800}
-    .in.code-z{background:rgba(70,130,180,.18); border-color:rgba(70,130,180,.50); color:#ddeeff; font-weight:800}
+    .in.code-t{background:var(--code-t-bg); border-color:var(--code-t-border); color:#fff0cf; font-weight:800}
+    .in.code-z{background:var(--code-z-bg); border-color:var(--code-z-border); color:#ddeeff; font-weight:800}
     .in.num-pos{background:rgba(31,143,78,.14); border-color:rgba(31,143,78,.42); color:#ddffea; font-weight:800}
     .in.num-neg{background:rgba(198,40,40,.14); border-color:rgba(198,40,40,.42); color:#ffd8d8; font-weight:800}
 
@@ -415,6 +419,11 @@
     .year-summary-table td .saldo, .year-summary-table td .status{justify-content:center}
 
 </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.js"></script>
+
 </head>
 <body>
 <div class="wrap">
@@ -501,7 +510,7 @@
             <label for="adminHolidaysToggle" style="cursor:pointer;user-select:none">Podświetl święta i dni wolne (weekendy + ustawowe)</label>
           </div>
 
-          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
+          <details id="adminColorsDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Oznaczenia i kolory kodów</span><span style="color:var(--muted); font-size:12px">U / O / L4 / UT / T / Z</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Kolory podświetleń kodów</div>
           <div class="admin-colors" style="display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:0 0 14px 0">
             <div style="color:var(--muted);font-size:12px">U (urlop)</div>
             <input id="adminColorU" type="color" style="height:40px;width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)" />
@@ -526,7 +535,7 @@
             <span style="color:var(--muted);font-size:12px">Zmiany są podglądem — zapisz ustawienia, aby je utrwalić.</span>
           </div></div></details>
 
-          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open>
+          <details id="adminLocksDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
             <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
               <span style="font-weight:700">Zamknięcia miesięcy i roku</span>
               <span style="color:var(--muted); font-size:12px">osobno dla każdego roku</span>
@@ -584,7 +593,75 @@
               <div id="secGlobalMsg" style="color:var(--muted); font-size:12px; margin-top:6px"></div>
             </div>
           </details>
-<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden" open><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
+
+          <details id="adminExportDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden">
+            <summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px">
+              <span style="font-weight:700">Eksport / backup</span>
+              <span style="color:var(--muted); font-size:12px">XLSX • PDF • JSON • backup</span>
+            </summary>
+            <div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)">
+              <div class="modal-sub" style="margin:0 0 10px 0">Eksport do Excela i PDF z kilkoma wariantami zakresu</div>
+              <div class="admin-note" style="margin:0 0 12px 0">Excel zawiera 4 arkusze: Parametry, Dane, Podsumowanie i Saldo.</div>
+
+              <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(260px,1fr));">
+                <div style="padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)">
+                  <div style="font-weight:700; margin-bottom:8px">Cały okres</div>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:8px">Wszystkie lata 2025–2035</div>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <button id="exportXlsxAllBtn" type="button" class="btn-primary">XLSX</button>
+                    <button id="exportPdfAllBtn" type="button" class="btn">PDF</button>
+                  </div>
+                </div>
+
+                <div style="padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)">
+                  <div style="font-weight:700; margin-bottom:8px">Wybrany rok</div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px">
+                    <select id="exportYearSel" class="btn" style="min-width:120px"></select>
+                    <button id="exportXlsxYearBtn" type="button" class="btn-primary">XLSX</button>
+                    <button id="exportPdfYearBtn" type="button" class="btn">PDF</button>
+                  </div>
+                </div>
+
+                <div style="padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)">
+                  <div style="font-weight:700; margin-bottom:8px">Wybrany miesiąc</div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px">
+                    <select id="exportMonthYearSel" class="btn" style="min-width:120px"></select>
+                    <select id="exportMonthSel" class="btn" style="min-width:140px"></select>
+                    <button id="exportXlsxMonthBtn" type="button" class="btn-primary">XLSX</button>
+                    <button id="exportPdfMonthBtn" type="button" class="btn">PDF</button>
+                  </div>
+                </div>
+
+                <div style="padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)">
+                  <div style="font-weight:700; margin-bottom:8px">Własny zakres dat</div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px">
+                    <input id="exportRangeFrom" class="modal-input" type="date" style="max-width:170px" />
+                    <input id="exportRangeTo" class="modal-input" type="date" style="max-width:170px" />
+                    <button id="exportXlsxRangeBtn" type="button" class="btn-primary">XLSX</button>
+                    <button id="exportPdfRangeBtn" type="button" class="btn">PDF</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px">
+                <button id="exportJsonBackupBtn" type="button" class="btn">Pobierz JSON backup</button>
+                <span id="exportStatus" style="color:var(--muted); font-size:12px"></span>
+              </div>
+            
+
+              <div class="modal-sub" style="margin:16px 0 8px 0">Backupy / archiwum</div>
+              <div class="admin-note" style="margin:0 0 12px 0">Możesz utworzyć backup, zaimportować plik JSON, podejrzeć starszą wersję danych, przywrócić ją do chmury albo usunąć z lokalnego archiwum tej przeglądarki.</div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px">
+                <button id="backupCreateBtn" type="button" class="btn-primary">Utwórz backup teraz</button>
+                <button id="backupImportBtn" type="button" class="btn">Importuj backup JSON</button>
+                <button id="backupExitPreviewBtn" type="button" class="btn" style="display:none">Wyjdź z podglądu backupu</button>
+                <input id="backupImportFile" type="file" accept="application/json,.json" style="display:none" />
+              </div>
+              <div id="backupStatus" style="color:var(--muted); font-size:12px; margin-bottom:10px"></div>
+              <div id="backupList" style="display:grid; gap:10px"></div>
+</div>
+          </details>
+<details id="adminEmployeesDetails" class="admin-accordion" style="margin:0 0 16px 0; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.04); overflow:hidden"><summary style="list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px"><span style="font-weight:700">Pracownicy</span><span style="color:var(--muted); font-size:12px">lista wspólna</span></summary><div style="padding:12px 14px; border-top:1px solid rgba(255,255,255,.10)"><div class="modal-sub" style="margin:0 0 10px 0">Zarządzanie pracownikami (lista wspólna dla wszystkich lat)</div>
 
           <div class="admin-grid">
             <div class="admin-head">Pracownicy</div>
@@ -655,6 +732,26 @@
   </div>
 
 
+
+
+
+  <!-- Global access (file password) modal -->
+  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
+    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
+        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
+      </div>
+      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
+        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
+      </div>
+      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
+      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
+      </div>
+    </div>
+  </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -677,10 +774,10 @@
         <div class="modal-head">
           <div>
             <div id="fbAuthTitle" class="modal-title">Logowanie do wspólnej bazy</div>
-            <div class="modal-sub">Zaloguj się loginem działu, aby odczytywać i zapisywać dane online</div>
+            <div class="modal-sub">Zaloguj się kontem działu (Firebase), aby odczytywać i zapisywać dane online</div>
           </div>
         </div>
-        <div class="modal-body" autocomplete="off">
+        <div class="modal-body">
           <input type="text" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none" />
           <input type="password" autocomplete="new-password" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none" />
           <label class="modal-label" for="fbEmail">Login</label>
@@ -697,16 +794,43 @@
   `);
 
   const defaultEmployees = [
-    "Anita Kos",
-    "Anita Bucka",
-    "Joanna Knycz",
-    "Agnieszka Panek",
-    "Marta Bogusz",
-    "Rafał Kukla",
-    "Maria Halotta",
-    "Zuzanna Jadczyk",
-    "Hania Danielczyk",
+    "EMP-001",
+    "EMP-002",
+    "EMP-003",
+    "EMP-004",
+    "EMP-005",
+    "EMP-006",
+    "EMP-007",
+    "EMP-008",
+    "EMP-009",
   ];
+  const LEGACY_EMPLOYEE_MAP = {
+    "Anita Kos": "EMP-001",
+    "Anita Bucka": "EMP-002",
+    "Joanna Knycz": "EMP-003",
+    "Agnieszka Panek": "EMP-004",
+    "Marta Bogusz": "EMP-005",
+    "Rafał Kukla": "EMP-006",
+    "Maria Halotta": "EMP-007",
+    "Zuzanna Jadczyk": "EMP-008",
+    "Hania Danielczyk": "EMP-009",
+  };
+  function anonymizeEmployeeName(name){
+    const key = String(name || '').trim();
+    return LEGACY_EMPLOYEE_MAP[key] || key;
+  }
+  function anonymizeEmployeeList(list){
+    return Array.from(new Set((list || []).map(anonymizeEmployeeName).filter(Boolean)));
+  }
+  function anonymizeMonthRows(monthObj){
+    const src = (monthObj && typeof monthObj === 'object') ? monthObj : {};
+    const out = {};
+    Object.entries(src).forEach(([emp, arr]) => {
+      const mapped = anonymizeEmployeeName(emp);
+      out[mapped] = Array.isArray(arr) ? arr.slice(0,31) : [];
+    });
+    return out;
+  }
 
   const els = {
     months: document.getElementById('months'),
@@ -772,6 +896,30 @@
     secGlobalStatus: document.getElementById('secGlobalStatus'),
     secGlobalMsg: document.getElementById('secGlobalMsg'),
 
+    // Export / backup
+    exportXlsxAllBtn: document.getElementById('exportXlsxAllBtn'),
+    exportPdfAllBtn: document.getElementById('exportPdfAllBtn'),
+    exportYearSel: document.getElementById('exportYearSel'),
+    exportXlsxYearBtn: document.getElementById('exportXlsxYearBtn'),
+    exportPdfYearBtn: document.getElementById('exportPdfYearBtn'),
+    exportMonthYearSel: document.getElementById('exportMonthYearSel'),
+    exportMonthSel: document.getElementById('exportMonthSel'),
+    exportXlsxMonthBtn: document.getElementById('exportXlsxMonthBtn'),
+    exportPdfMonthBtn: document.getElementById('exportPdfMonthBtn'),
+    exportRangeFrom: document.getElementById('exportRangeFrom'),
+    exportRangeTo: document.getElementById('exportRangeTo'),
+    exportXlsxRangeBtn: document.getElementById('exportXlsxRangeBtn'),
+    exportPdfRangeBtn: document.getElementById('exportPdfRangeBtn'),
+    exportJsonBackupBtn: document.getElementById('exportJsonBackupBtn'),
+    exportStatus: document.getElementById('exportStatus'),
+    backupCreateBtn: document.getElementById('backupCreateBtn'),
+    backupImportBtn: document.getElementById('backupImportBtn'),
+    backupImportFile: document.getElementById('backupImportFile'),
+    backupList: document.getElementById('backupList'),
+    backupStatus: document.getElementById('backupStatus'),
+    backupExitPreviewBtn: document.getElementById('backupExitPreviewBtn'),
+    backupPreviewBanner: document.getElementById('backupPreviewBanner'),
+
     // Access modal
     accessModal: document.getElementById('accessModal'),
     accessPass: document.getElementById('accessPass'),
@@ -836,6 +984,9 @@
     const wd = new Date(y, m-1, d).getDay();
     return ["Nd","Pn","Wt","Śr","Cz","Pt","So"][wd];
   }
+  function weekdayName(y,m,d){
+    return weekdayPL(y,m,d);
+  }
   function parseNum(val){
     if(val==null) return 0;
     let s = String(val).trim();
@@ -843,6 +994,10 @@
     s = s.replace(',', '.');
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
+  }
+
+  function parsePLNumber(val){
+    return parseNum(val);
   }
   const CODE_META = {
     U: { label: 'Urlop', cls: 'good' },
@@ -866,6 +1021,26 @@
   }
   function getCodeStatusClass(code){
     return (CODE_META[code] && CODE_META[code].cls) ? CODE_META[code].cls : 'warn';
+  }
+  function getCodeColorHex(code){
+    const cc = (state && state.settings && state.settings.codeColors && typeof state.settings.codeColors === 'object')
+      ? state.settings.codeColors
+      : defaultState().settings.codeColors;
+    return (cc && cc[code]) ? cc[code] : null;
+  }
+  function getReadableTextColor(rgb){
+    if(!rgb) return 'var(--text)';
+    const lum = (0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b) / 255;
+    return lum > 0.62 ? '#101622' : '#f6fbff';
+  }
+  function getCodeBadgeStyle(code, active=true){
+    const hex = getCodeColorHex(code);
+    const rgb = hexToRgb(hex);
+    if(!rgb) return '';
+    const bg = rgba(rgb, active ? 0.26 : 0.12);
+    const bd = rgba(rgb, active ? 0.62 : 0.34);
+    const fg = getReadableTextColor(rgb);
+    return `background:${bg};border-color:${bd};color:${fg};`;
   }
   function isTrackedCode(v){
     return getTrackedCodes().includes(v);
@@ -1006,14 +1181,16 @@ function normalizeCellValue(val){
       O: ['--code-o-bg','--code-o-border'],
       L4: ['--code-l4-bg','--code-l4-border'],
       UT: ['--code-ut-bg','--code-ut-border'],
+      T: ['--code-t-bg','--code-t-border'],
+      Z: ['--code-z-bg','--code-z-border'],
     };
     Object.keys(map).forEach((k)=>{
       const rgb = hexToRgb(cc[k]);
       if(!rgb) return;
       const [bgVar, borderVar] = map[k];
       // tła i obramowania jak w oryginale
-      const bgA = (k==='UT') ? 0.16 : (k==='L4') ? 0.20 : 0.22;
-      const bdA = (k==='UT') ? 0.45 : (k==='L4') ? 0.52 : 0.55;
+      const bgA = (k==='UT') ? 0.16 : (k==='L4') ? 0.20 : ((k==='T' || k==='Z') ? 0.18 : 0.22);
+      const bdA = (k==='UT') ? 0.45 : (k==='L4') ? 0.52 : ((k==='T' || k==='Z') ? 0.50 : 0.55);
       document.documentElement.style.setProperty(bgVar, rgba(rgb, bgA));
       document.documentElement.style.setProperty(borderVar, rgba(rgb, bdA));
     });
@@ -1135,7 +1312,7 @@ function normalizeCellValue(val){
     // Ensure optional fields
 
     const obj = (remoteObj && typeof remoteObj === 'object') ? remoteObj : {};
-    const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(obj.employees) : base.employees.slice();
+    const emps = Array.isArray(obj.employees) && obj.employees.length ? sortEmployees(anonymizeEmployeeList(obj.employees)) : base.employees.slice();
 
     const out = {
       year: currentYear,
@@ -1169,7 +1346,7 @@ function normalizeCellValue(val){
 
     for(let m=1;m<=12;m++){
       out.months[m] = {};
-      const remoteMonth = (obj.months && obj.months[m]) ? obj.months[m] : {};
+      const remoteMonth = anonymizeMonthRows((obj.months && obj.months[m]) ? obj.months[m] : {});
       for (const emp of emps) {
         const arr = Array.isArray(remoteMonth[emp]) ? remoteMonth[emp].slice(0,31) : [];
         while (arr.length < 31) arr.push("");
@@ -1186,6 +1363,9 @@ function normalizeCellValue(val){
   let selectedAbsenceEmp = null;
   let adminLockYear = currentYear;
   let adminLockSettingsCache = {};
+  let backupArchive = [];
+  let backupPreview = null;
+  let liveYearBeforeBackupPreview = currentYear;
 
   // ====== Firebase ======
   let app = null;
@@ -1224,6 +1404,8 @@ function normalizeCellValue(val){
       els.fbAuthModal.style.display = 'flex';
       els.fbAuthModal.setAttribute('aria-hidden', 'false');
     }
+    if (els.fbEmail) els.fbEmail.value = '';
+    if (els.fbPass) els.fbPass.value = '';
     if (els.fbEmail) setTimeout(()=>els.fbEmail.focus(), 50);
   }
   function hideAuthModal(){
@@ -1266,7 +1448,7 @@ function normalizeCellValue(val){
           if (accountBtn) accountBtn.style.display = '';
           subscribeShared();
           subscribeRemote();
-          showToast(`połączono (${currentUser.email || 'konto'})`, true);
+          showToast('połączono', true);
         } else {
           remoteReady = false;
           detachRemote();
@@ -1350,13 +1532,17 @@ function normalizeCellValue(val){
     return {
       year: currentYear,
       updatedAt: Date.now(),
-      employees: employees.slice(),
+      employees: anonymizeEmployeeList(employees.slice()),
       months: JSON.parse(JSON.stringify(state.months || {})),
       settings: JSON.parse(JSON.stringify(state.settings || { holidaysEnabled: true }))
     };
   }
 
   function saveRemote(showAlert=false){
+    if (backupPreview) {
+      showToast('Tryb podglądu backupu — zapis do chmury jest zablokowany.', false);
+      return Promise.reject(new Error('Backup preview active'));
+    }
     if (!dbRef || !currentUser) {
       showAuthModal();
       showAuthMsg('Najpierw zaloguj się do Firebase.', false);
@@ -1392,6 +1578,7 @@ function normalizeCellValue(val){
   }
 
   function queueSave(delay=700){
+    if (backupPreview) return;
     if (!remoteReady || !currentUser) return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => { saveRemote(false).catch(()=>{}); }, delay);
@@ -2078,11 +2265,11 @@ if(typed !== phrase){
         showAuthMsg('Wpisz login i hasło.', false);
         return;
       }
-      const email = (login.toLowerCase() === 'marketing') ? 'marketing@davis.pl' : login;
       hideAuthMsg();
       els.fbLoginBtn.disabled = true;
       els.fbLoginBtn.textContent = 'Logowanie…';
       try {
+        const email = (login.toLowerCase() === 'marketing') ? 'marketing@davis.pl' : login;
         await auth.signInWithEmailAndPassword(email, pass);
       } catch (e) {
         console.error(e);
@@ -2483,7 +2670,8 @@ if(typed !== phrase){
         td.className="sum";
         const val = c[code] || 0;
         const cls = val ? getCodeStatusClass(code) : 'warn';
-        td.innerHTML = `<span class="saldo ${cls}">${val}</span>`;
+        const style = getCodeBadgeStyle(code, val > 0);
+        td.innerHTML = `<span class="saldo ${cls}" style="${style}">${val}</span>`;
         tr.appendChild(td);
       });
 
@@ -2542,7 +2730,7 @@ if(typed !== phrase){
         const tdD=document.createElement('td'); tdD.className="sum"; tdD.textContent=e.label; tr.appendChild(tdD);
         const tdW=document.createElement('td'); tdW.className="sum"; tdW.style.textAlign='center'; tdW.textContent=e.weekday; tr.appendChild(tdW);
         const tdE=document.createElement('td'); tdE.className="name"; tdE.innerHTML=`<b>${e.emp}</b>`; tr.appendChild(tdE);
-        const tdC=document.createElement('td'); tdC.className="sum"; tdC.style.textAlign='center'; tdC.innerHTML=`<span class="status ${getCodeStatusClass(e.code)}">${e.code}</span>`; tr.appendChild(tdC);
+        const tdC=document.createElement('td'); tdC.className="sum"; tdC.style.textAlign='center'; tdC.innerHTML=`<span class="status ${getCodeStatusClass(e.code)}" style="${getCodeBadgeStyle(e.code, true)}">${e.code}</span>`; tr.appendChild(tdC);
         const tdO=document.createElement('td'); tdO.textContent=getCodeLabel(e.code); tr.appendChild(tdO);
         tbody2.appendChild(tr);
       });
@@ -2969,7 +3157,8 @@ if(typed !== phrase){
         td.className="sum";
         const val = c[code] || 0;
         const cls = val ? getCodeStatusClass(code) : 'warn';
-        td.innerHTML = `<span class="saldo ${cls}">${val}</span>`;
+        const style = getCodeBadgeStyle(code, val > 0);
+        td.innerHTML = `<span class="saldo ${cls}" style="${style}">${val}</span>`;
         tr.appendChild(td);
       });
 
@@ -3028,7 +3217,7 @@ if(typed !== phrase){
         const tdD=document.createElement('td'); tdD.className="sum"; tdD.textContent=e.label; tr.appendChild(tdD);
         const tdW=document.createElement('td'); tdW.className="sum"; tdW.style.textAlign='center'; tdW.textContent=e.weekday; tr.appendChild(tdW);
         const tdE=document.createElement('td'); tdE.className="name"; tdE.innerHTML=`<b>${e.emp}</b>`; tr.appendChild(tdE);
-        const tdC=document.createElement('td'); tdC.className="sum"; tdC.style.textAlign='center'; tdC.innerHTML=`<span class="status ${getCodeStatusClass(e.code)}">${e.code}</span>`; tr.appendChild(tdC);
+        const tdC=document.createElement('td'); tdC.className="sum"; tdC.style.textAlign='center'; tdC.innerHTML=`<span class="status ${getCodeStatusClass(e.code)}" style="${getCodeBadgeStyle(e.code, true)}">${e.code}</span>`; tr.appendChild(tdC);
         const tdO=document.createElement('td'); tdO.textContent=getCodeLabel(e.code); tr.appendChild(tdO);
         tbody2.appendChild(tr);
       });
@@ -3078,6 +3267,7 @@ if(typed !== phrase){
     employees = state.employees.slice();
     adminLockYear = currentYear;
     populateYearSelectors();
+    populateExportSelectors();
     render();
     if(currentUser && dbRef) subscribeRemote();
     if(isAdmin()) renderAdminLockControls();
@@ -3136,6 +3326,394 @@ if(typed !== phrase){
   });
 
   populateYearSelectors();
+
+  const BACKUP_ARCHIVE_KEY = 'nadgodziny_backup_archive_v1';
+
+  function setExportStatus(msg, ok=true){
+    if(!els.exportStatus) return;
+    els.exportStatus.textContent = msg || '';
+    els.exportStatus.style.color = ok ? 'var(--muted)' : '#ffb4b4';
+  }
+  function setBackupStatus(msg, ok=true){
+    if(!els.backupStatus) return;
+    els.backupStatus.textContent = msg || '';
+    els.backupStatus.style.color = ok ? 'var(--muted)' : '#ffb4b4';
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function formatDateISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+  function formatDatePL(iso){
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso||''));
+    return m ? `${m[3]}.${m[2]}.${m[1]}` : String(iso||'');
+  }
+  function fileStamp(){ const n=new Date(); return `${n.getFullYear()}-${pad2(n.getMonth()+1)}-${pad2(n.getDate())}_${pad2(n.getHours())}-${pad2(n.getMinutes())}`; }
+  function safeFilename(base){ return String(base).replace(/[^a-zA-Z0-9_\-.ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g,'_'); }
+  function downloadBlob(blob, filename){
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+  }
+  function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+  function sanitizeStateForBackup(s){
+    const cloned = JSON.parse(JSON.stringify(s || {}));
+    if(cloned.settings){
+      delete cloned.settings.adminPassword;
+      delete cloned.settings.globalAccessPassword;
+    }
+    return cloned;
+  }
+  function populateExportSelectors(){
+    if(els.exportYearSel) els.exportYearSel.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join('');
+    if(els.exportMonthYearSel) els.exportMonthYearSel.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`).join('');
+    if(els.exportMonthSel) els.exportMonthSel.innerHTML = monthNames.map((name,idx)=>`<option value="${idx+1}" ${(idx+1)===currentMonth?'selected':''}>${name}</option>`).join('');
+    if(els.exportRangeFrom && !els.exportRangeFrom.value) els.exportRangeFrom.value = `${YEARS[0]}-01-01`;
+    if(els.exportRangeTo && !els.exportRangeTo.value) els.exportRangeTo.value = `${YEARS[YEARS.length-1]}-12-31`;
+  }
+  function loadBackupArchive(){
+    try{
+      const raw = localStorage.getItem(BACKUP_ARCHIVE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      backupArchive = Array.isArray(arr) ? arr : [];
+    }catch(e){ backupArchive = []; }
+    renderBackupArchive();
+  }
+  function saveBackupArchive(){
+    try{ localStorage.setItem(BACKUP_ARCHIVE_KEY, JSON.stringify(backupArchive)); }catch(e){ console.error(e); setBackupStatus('Nie udało się zapisać archiwum backupów w tej przeglądarce.', false); }
+    renderBackupArchive();
+  }
+  function updateBackupPreviewUI(){
+    const on = !!backupPreview;
+    if(els.backupPreviewBanner) els.backupPreviewBanner.style.display = on ? 'block' : 'none';
+    if(els.backupExitPreviewBtn) els.backupExitPreviewBtn.style.display = on ? '' : 'none';
+    if(els.saveBtn) els.saveBtn.disabled = on;
+    const sub = document.querySelector('.title .sub');
+    if(sub) sub.innerHTML = `Wersja online (Firebase) • Rok <b>${currentYear}</b> • Wspólny zapis/odczyt dla całego działu` + (on ? ` • <b style="color:#ffd27a">PODGLĄD BACKUPU</b>` : ``);
+  }
+  function renderBackupArchive(){
+    if(!els.backupList) return;
+    const items = backupArchive.slice().sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+    if(!items.length){
+      els.backupList.innerHTML = `<div style="padding:12px; border:1px dashed rgba(255,255,255,.14); border-radius:12px; color:var(--muted)">Brak backupów w lokalnym archiwum tej przeglądarki.</div>`;
+      return;
+    }
+    els.backupList.innerHTML = items.map(item=>{
+      const years = Object.keys(item.years||{}).map(Number).sort((a,b)=>a-b);
+      const label = item.label || `Backup ${formatDatePL(new Date(item.createdAt||Date.now()).toISOString().slice(0,10))}`;
+      return `<div style="padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:rgba(255,255,255,.03)">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700">${escapeHtml(label)}</div>
+            <div style="color:var(--muted); font-size:12px; margin-top:4px">Utworzono: ${new Date(item.createdAt||Date.now()).toLocaleString('pl-PL')} • Lata: ${years.join(', ') || 'brak'}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button type="button" class="btn" data-backup-action="preview" data-backup-id="${escapeHtml(item.id)}">Użyj / podgląd</button>
+            <button type="button" class="btn" data-backup-action="restore" data-backup-id="${escapeHtml(item.id)}">Przywróć</button>
+            <button type="button" class="btn" data-backup-action="download" data-backup-id="${escapeHtml(item.id)}">Pobierz</button>
+            <button type="button" class="btn-danger" data-backup-action="delete" data-backup-id="${escapeHtml(item.id)}">Usuń</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function getBackupById(id){ return backupArchive.find(x=>x && x.id===id) || null; }
+  async function fetchYearSnapshot(year, opts={}){
+    const y = Number(year);
+    if(!YEARS.includes(y)) throw new Error('Nieprawidłowy rok');
+    if(backupPreview && !opts.ignorePreview && backupPreview.years && backupPreview.years[y]) return normalizeState(backupPreview.years[y]);
+    if(y===currentYear && !opts.forceRemote && !opts.ignorePreview) return normalizeState(cloneForSave());
+    if(!db || !currentUser) throw new Error('Najpierw zaloguj się do Firebase.');
+    const snap = await db.ref(YEAR_DB_PATH(y)).once('value');
+    return normalizeState(snap.val());
+  }
+  async function fetchSnapshotsForYears(years, opts={}){
+    const out = {};
+    for(const y of years){ out[y] = sanitizeStateForBackup(await fetchYearSnapshot(y, opts)); }
+    return out;
+  }
+  function buildRowsFromSnapshots(yearMap, range){
+    const codes = getTrackedCodes();
+    const rows = [];
+    const from = range && range.from ? String(range.from) : null;
+    const to = range && range.to ? String(range.to) : null;
+    const years = Object.keys(yearMap||{}).map(Number).sort((a,b)=>a-b);
+    years.forEach(y=>{
+      const snap = normalizeState(yearMap[y]);
+      const emps = Array.isArray(snap.employees) ? snap.employees.slice() : [];
+      for(let m=1;m<=12;m++){
+        const dim = daysInMonth(y,m);
+        for(const emp of emps){
+          const arr = (((snap.months||{})[m]||{})[emp]) || Array(31).fill('');
+          for(let d=1; d<=dim; d++){
+            const value = normalizeCellValue(arr[d-1]);
+            if(!value) continue;
+            const iso = formatDateISO(y,m,d);
+            if(from && iso < from) continue;
+            if(to && iso > to) continue;
+            const num = parsePLNumber(value);
+            const code = isTrackedCode(value) ? value : '';
+            rows.push({
+              date: iso,
+              year: y,
+              month: m,
+              monthName: monthNames[m-1],
+              day: d,
+              weekday: weekdayName(y,m,d),
+              employee: emp,
+              value,
+              kind: code ? 'kod' : 'liczba',
+              numericValue: Number.isFinite(num) ? num : '',
+              code,
+              codeLabel: code ? getCodeLabel(code) : ''
+            });
+          }
+        }
+      }
+    });
+    rows.sort((a,b)=> a.date===b.date ? a.employee.localeCompare(b.employee,'pl') : a.date.localeCompare(b.date));
+    return rows;
+  }
+  function buildSummaryRows(rows){
+    const codes = getTrackedCodes();
+    const map = new Map();
+    rows.forEach(r=>{
+      if(!map.has(r.employee)){
+        const base = { employee:r.employee, saldo:0 };
+        codes.forEach(c=> base[c]=0);
+        map.set(r.employee, base);
+      }
+      const item = map.get(r.employee);
+      if(r.code) item[r.code] = (item[r.code]||0) + 1;
+      if(typeof r.numericValue === 'number' && Number.isFinite(r.numericValue)) item.saldo += r.numericValue;
+    });
+    return Array.from(map.values()).sort((a,b)=> a.employee.localeCompare(b.employee,'pl'));
+  }
+  function buildSaldoRows(summaryRows){
+    return summaryRows.map(r=>({ employee:r.employee, saldo:r.saldo, status: r.saldo>0 ? 'Nadgodziny' : r.saldo<0 ? 'Do odrobienia' : 'OK' }));
+  }
+  function buildParamsRows(scopeLabel, rows, yearMap, extra={}){
+    const years = Object.keys(yearMap||{}).map(Number).sort((a,b)=>a-b);
+    return [
+      ['Zakres eksportu', scopeLabel],
+      ['Wygenerowano', new Date().toLocaleString('pl-PL')],
+      ['Lata objęte eksportem', years.join(', ')],
+      ['Liczba wpisów', rows.length],
+      ...Object.entries(extra||{}).map(([k,v])=>[k,v])
+    ];
+  }
+  async function prepareExportDataset(kind){
+    if(!currentUser || !db){ throw new Error('Najpierw zaloguj się do Firebase.'); }
+    if(kind==='all'){
+      const yearMap = await fetchSnapshotsForYears(YEARS, {ignorePreview:false});
+      const rows = buildRowsFromSnapshots(yearMap, {from:`${YEARS[0]}-01-01`, to:`${YEARS[YEARS.length-1]}-12-31`});
+      return { scopeLabel:'Cały okres 2025–2035', filePart:'caly_okres', yearMap, rows, params: buildParamsRows('Cały okres 2025–2035', rows, yearMap) };
+    }
+    if(kind==='year'){
+      const year = Number(els.exportYearSel && els.exportYearSel.value || currentYear);
+      const yearMap = await fetchSnapshotsForYears([year], {ignorePreview:false});
+      const rows = buildRowsFromSnapshots(yearMap, {from:`${year}-01-01`, to:`${year}-12-31`});
+      return { scopeLabel:`Rok ${year}`, filePart:`rok_${year}`, yearMap, rows, params: buildParamsRows(`Rok ${year}`, rows, yearMap, {'Wybrany rok': year}) };
+    }
+    if(kind==='month'){
+      const year = Number(els.exportMonthYearSel && els.exportMonthYearSel.value || currentYear);
+      const month = Number(els.exportMonthSel && els.exportMonthSel.value || currentMonth);
+      const yearMap = await fetchSnapshotsForYears([year], {ignorePreview:false});
+      const from = formatDateISO(year, month, 1);
+      const to = formatDateISO(year, month, daysInMonth(year, month));
+      const rows = buildRowsFromSnapshots(yearMap, {from, to});
+      return { scopeLabel:`${monthNames[month-1]} ${year}`, filePart:`${year}_${pad2(month)}`, yearMap, rows, params: buildParamsRows(`${monthNames[month-1]} ${year}`, rows, yearMap, {'Wybrany rok': year, 'Wybrany miesiąc': monthNames[month-1]}) };
+    }
+    if(kind==='range'){
+      const from = String(els.exportRangeFrom && els.exportRangeFrom.value || '').trim();
+      const to = String(els.exportRangeTo && els.exportRangeTo.value || '').trim();
+      if(!from || !to) throw new Error('Wybierz obie daty zakresu.');
+      if(from > to) throw new Error('Data "od" nie może być późniejsza niż data "do".');
+      const yearStart = Number(from.slice(0,4));
+      const yearEnd = Number(to.slice(0,4));
+      const years = YEARS.filter(y=>y>=yearStart && y<=yearEnd);
+      const yearMap = await fetchSnapshotsForYears(years, {ignorePreview:false});
+      const rows = buildRowsFromSnapshots(yearMap, {from, to});
+      return { scopeLabel:`Zakres ${formatDatePL(from)}–${formatDatePL(to)}`, filePart:`zakres_${from}_${to}`, yearMap, rows, params: buildParamsRows(`Zakres ${formatDatePL(from)}–${formatDatePL(to)}`, rows, yearMap, {'Data od': formatDatePL(from), 'Data do': formatDatePL(to)}) };
+    }
+    throw new Error('Nieznany typ eksportu.');
+  }
+  function exportDatasetToXlsx(dataset){
+    if(typeof XLSX === 'undefined') throw new Error('Biblioteka XLSX nie jest załadowana.');
+    const codes = getTrackedCodes();
+    const summary = buildSummaryRows(dataset.rows);
+    const saldo = buildSaldoRows(summary);
+    const wb = XLSX.utils.book_new();
+    const wsParams = XLSX.utils.aoa_to_sheet(dataset.params);
+    const dataAoa = [['Data','Rok','Miesiąc','Dzień','Dzień tygodnia','Pracownik','Wpis','Typ','Wartość liczbowa','Kod','Opis kodu']].concat(dataset.rows.map(r=>[formatDatePL(r.date),r.year,r.monthName,r.day,r.weekday,r.employee,r.value,r.kind,r.numericValue,r.code,r.codeLabel]));
+    const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
+    const summaryAoa = [['Pracownik', ...codes, 'Saldo']].concat(summary.map(r=>[r.employee, ...codes.map(c=>r[c]||0), r.saldo]));
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryAoa);
+    const saldoAoa = [['Pracownik','Saldo','Status']].concat(saldo.map(r=>[r.employee,r.saldo,r.status]));
+    const wsSaldo = XLSX.utils.aoa_to_sheet(saldoAoa);
+    ;[['Parametry',wsParams],['Dane',wsData],['Podsumowanie',wsSummary],['Saldo',wsSaldo]].forEach(([name,ws])=>{ XLSX.utils.book_append_sheet(wb, ws, name); });
+    XLSX.writeFile(wb, safeFilename(`nadgodziny_${dataset.filePart}_${fileStamp()}.xlsx`));
+  }
+  function exportDatasetToPdf(dataset){
+    if(typeof pdfMake === 'undefined') throw new Error('Biblioteka PDF nie jest załadowana.');
+    const codes = getTrackedCodes();
+    const summary = buildSummaryRows(dataset.rows);
+    const saldo = buildSaldoRows(summary);
+    const makeTable = (title, headers, body) => ([
+      { text:title, style:'sectionHeader', margin:[0,12,0,6] },
+      { table:{ headerRows:1, widths: headers.map(()=> 'auto'), body:[headers, ...body] }, layout:'lightHorizontalLines' }
+    ]);
+    const docDefinition = {
+      pageOrientation:'landscape',
+      pageMargins:[24,24,24,24],
+      defaultStyle:{ font:'Roboto', fontSize:9 },
+      content:[
+        { text:'Nadgodziny — eksport PDF', style:'title' },
+        { text: dataset.scopeLabel, color:'#666', margin:[0,0,0,8] },
+        ...makeTable('Parametry eksportu', ['Pole','Wartość'], dataset.params.map(r=>[String(r[0]), String(r[1])])),
+        ...makeTable('Podsumowanie', ['Pracownik', ...codes, 'Saldo'], summary.map(r=>[r.employee, ...codes.map(c=>String(r[c]||0)), String(r.saldo)])),
+        ...makeTable('Saldo', ['Pracownik','Saldo','Status'], saldo.map(r=>[r.employee, String(r.saldo), r.status])),
+        ...makeTable('Dane dzienne', ['Data','Dzień','Pracownik','Wpis','Typ','Opis'], dataset.rows.map(r=>[formatDatePL(r.date), r.weekday, r.employee, r.value, r.kind, r.codeLabel || '']))
+      ],
+      styles:{ title:{ fontSize:16, bold:true }, sectionHeader:{ fontSize:11, bold:true } }
+    };
+    pdfMake.createPdf(docDefinition).download(safeFilename(`nadgodziny_${dataset.filePart}_${fileStamp()}.pdf`));
+  }
+  async function handleExport(kind, format){
+    try{
+      setExportStatus('Przygotowuję eksport…', true);
+      const dataset = await prepareExportDataset(kind);
+      if(format==='xlsx') exportDatasetToXlsx(dataset);
+      else if(format==='pdf') exportDatasetToPdf(dataset);
+      else throw new Error('Nieznany format eksportu.');
+      setExportStatus('Eksport gotowy ✅', true);
+    }catch(e){
+      console.error(e);
+      setExportStatus(e.message || 'Nie udało się przygotować eksportu.', false);
+    }
+  }
+  async function createBackupPayload(label='Backup ręczny'){
+    const years = backupPreview ? Object.keys(backupPreview.years||{}).map(Number) : YEARS.slice();
+    const yearMap = await fetchSnapshotsForYears(years, {ignorePreview:false});
+    return {
+      id: `bkp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+      label,
+      createdAt: Date.now(),
+      years: yearMap,
+      employees: Array.from(new Set(Object.values(yearMap).flatMap(s=>Array.isArray(s.employees)?s.employees:[]))).sort((a,b)=>String(a).localeCompare(String(b),'pl')),
+      meta: { app:'nadgodziny', version:1, years }
+    };
+  }
+  function downloadBackupPayload(payload){
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json;charset=utf-8'});
+    downloadBlob(blob, safeFilename(`backup_nadgodziny_${fileStamp()}.json`));
+  }
+  async function createAndStoreBackup(label='Backup ręczny', downloadAlso=false){
+    const payload = await createBackupPayload(label);
+    backupArchive = [payload, ...backupArchive.filter(x=>x.id!==payload.id)].slice(0,20);
+    saveBackupArchive();
+    if(downloadAlso) downloadBackupPayload(payload);
+    return payload;
+  }
+  async function restoreBackupToFirebase(item){
+    if(!item || !item.years) throw new Error('Backup jest nieprawidłowy.');
+    if(!db || !currentUser) throw new Error('Najpierw zaloguj się do Firebase.');
+    const typed = prompt('Aby potwierdzić przywrócenie backupu do chmury, wpisz dokładnie: przywracambackup');
+    if(typed !== 'przywracambackup') throw new Error('Przywracanie anulowane.');
+    for(const [year, payload] of Object.entries(item.years)){
+      await db.ref(YEAR_DB_PATH(Number(year))).set(sanitizeStateForBackup(payload));
+    }
+    if(!backupPreview) switchYear(currentYear);
+  }
+  function enterBackupPreview(item){
+    if(!item || !item.years) return;
+    backupPreview = item;
+    liveYearBeforeBackupPreview = currentYear;
+    const targetYear = YEARS.includes(currentYear) && item.years[currentYear] ? currentYear : Number(Object.keys(item.years||{})[0] || currentYear);
+    if(targetYear === currentYear){
+      state = normalizeState(item.years[targetYear] || {});
+      employees = state.employees.slice();
+      render();
+      updateBackupPreviewUI();
+    }else{
+      currentYear = targetYear - 1;
+      switchYear(targetYear);
+    }
+    setBackupStatus(`Aktywny podgląd backupu: ${item.label || item.id}`, true);
+  }
+  function exitBackupPreview(){
+    if(!backupPreview) return;
+    backupPreview = null;
+    updateBackupPreviewUI();
+    const restoreYear = liveYearBeforeBackupPreview || currentYear;
+    if(restoreYear === currentYear){
+      detachRemote();
+      dbRef = db ? db.ref(YEAR_DB_PATH(currentYear)) : null;
+      state = defaultState();
+      employees = state.employees.slice();
+      render();
+      if(currentUser && dbRef) subscribeRemote();
+    }else{
+      currentYear = restoreYear - 1;
+      switchYear(restoreYear);
+    }
+    setBackupStatus('Wyłączono podgląd backupu.', true);
+  }
+  async function importBackupFile(file){
+    const txt = await file.text();
+    const obj = JSON.parse(txt);
+    if(!obj || typeof obj !== 'object' || !obj.years || typeof obj.years !== 'object') throw new Error('To nie wygląda na poprawny backup nadgodzin.');
+    obj.id = obj.id || `bkp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    obj.createdAt = Number(obj.createdAt) || Date.now();
+    obj.label = obj.label || `Import ${new Date(obj.createdAt).toLocaleString('pl-PL')}`;
+    backupArchive = [obj, ...backupArchive.filter(x=>x.id!==obj.id)].slice(0,20);
+    saveBackupArchive();
+    return obj;
+  }
+
+  populateExportSelectors();
+  loadBackupArchive();
+  updateBackupPreviewUI();
+
+  if(els.backupList){
+    els.backupList.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-backup-action]');
+      if(!btn) return;
+      const action = btn.getAttribute('data-backup-action');
+      const id = btn.getAttribute('data-backup-id');
+      const item = getBackupById(id);
+      if(!item) return;
+      try{
+        if(action==='preview') enterBackupPreview(item);
+        else if(action==='download') downloadBackupPayload(item);
+        else if(action==='delete'){
+          const ok = confirm('Usunąć ten backup z lokalnego archiwum tej przeglądarki?');
+          if(!ok) return;
+          backupArchive = backupArchive.filter(x=>x.id!==id);
+          if(backupPreview && backupPreview.id===id) exitBackupPreview();
+          saveBackupArchive();
+          setBackupStatus('Usunięto backup z archiwum.', true);
+        }else if(action==='restore'){
+          await restoreBackupToFirebase(item);
+          setBackupStatus('Przywrócono backup do chmury ✅', true);
+        }
+      }catch(err){ console.error(err); setBackupStatus(err.message || 'Operacja na backupie nie powiodła się.', false); }
+    });
+  }
+  if(els.backupCreateBtn) els.backupCreateBtn.addEventListener('click', async ()=>{ try{ setBackupStatus('Tworzę backup…', true); const payload = await createAndStoreBackup('Backup ręczny', true); setBackupStatus(`Utworzono backup: ${payload.label} ✅`, true); }catch(e){ console.error(e); setBackupStatus(e.message || 'Nie udało się utworzyć backupu.', false); } });
+  if(els.backupImportBtn) els.backupImportBtn.addEventListener('click', ()=>{ if(els.backupImportFile) els.backupImportFile.click(); });
+  if(els.backupImportFile) els.backupImportFile.addEventListener('change', async (e)=>{ const file = e.target.files && e.target.files[0]; if(!file) return; try{ const item = await importBackupFile(file); setBackupStatus(`Zaimportowano backup: ${item.label} ✅`, true); }catch(err){ console.error(err); setBackupStatus(err.message || 'Nie udało się zaimportować backupu.', false); } e.target.value=''; });
+  if(els.backupExitPreviewBtn) els.backupExitPreviewBtn.addEventListener('click', ()=> exitBackupPreview());
+
+  if(els.exportXlsxAllBtn) els.exportXlsxAllBtn.addEventListener('click', ()=> handleExport('all','xlsx'));
+  if(els.exportPdfAllBtn) els.exportPdfAllBtn.addEventListener('click', ()=> handleExport('all','pdf'));
+  if(els.exportXlsxYearBtn) els.exportXlsxYearBtn.addEventListener('click', ()=> handleExport('year','xlsx'));
+  if(els.exportPdfYearBtn) els.exportPdfYearBtn.addEventListener('click', ()=> handleExport('year','pdf'));
+  if(els.exportXlsxMonthBtn) els.exportXlsxMonthBtn.addEventListener('click', ()=> handleExport('month','xlsx'));
+  if(els.exportPdfMonthBtn) els.exportPdfMonthBtn.addEventListener('click', ()=> handleExport('month','pdf'));
+  if(els.exportXlsxRangeBtn) els.exportXlsxRangeBtn.addEventListener('click', ()=> handleExport('range','xlsx'));
+  if(els.exportPdfRangeBtn) els.exportPdfRangeBtn.addEventListener('click', ()=> handleExport('range','pdf'));
+  if(els.exportJsonBackupBtn) els.exportJsonBackupBtn.addEventListener('click', async ()=>{ try{ setExportStatus('Tworzę JSON backup…', true); const payload = await createBackupPayload('Backup JSON'); downloadBackupPayload(payload); setExportStatus('Pobrano JSON backup ✅', true); }catch(e){ console.error(e); setExportStatus(e.message || 'Nie udało się pobrać backupu JSON.', false); } });
+
+
   render();
   refreshAdminUI();
   enforceAccessGate();
@@ -3143,23 +3721,5 @@ if(typed !== phrase){
 })();
 
 </script>
-
-
-  <!-- Global access (file password) modal -->
-  <div id="accessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9999; align-items:center; justify-content:center; padding:16px">
-    <div style="width:min(520px, 100%); background:rgba(20,24,32,.96); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.55); padding:16px">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px">
-        <div style="font-weight:800; letter-spacing:.2px">Dostęp chroniony hasłem</div>
-      </div>
-      <div style="color:rgba(255,255,255,.72); font-size:13px; margin:0 0 12px 0">
-        Wpisz hasło, aby otworzyć plik. Dostęp zapamiętamy w tej przeglądarce.
-      </div>
-      <input id="accessPass" class="modal-input" type="password" placeholder="Hasło dostępu" autocomplete="current-password" />
-      <div id="accessMsg" style="display:none; margin-top:10px; color:#ffb4b4; font-size:12px"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
-        <button id="accessOpenBtn" class="btn-primary" type="button">Otwórz</button>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
