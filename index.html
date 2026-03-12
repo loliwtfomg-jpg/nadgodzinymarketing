@@ -229,23 +229,33 @@
       font-size:12px;
     }
     .in:focus{border-color:rgba(110,168,255,.70); box-shadow:0 0 0 3px rgba(110,168,255,.22)}
-    .in[disabled]{opacity:.35}
-    tr.row-selected-employee td{background:rgba(255,225,120,.06)}
-    tr.row-selected-employee td.name,
-    tr.row-selected-employee td.daycell,
-    tr.row-selected-employee td.sum{
-      box-shadow: inset 0 0 0 1px rgba(255,225,120,.34);
+    .in[disabled]{opacity:1; cursor:not-allowed}
+    tr.row-selected-employee td{
+      background:rgba(255,214,84,.10);
+      box-shadow:inset 0 2px 0 rgba(255,214,84,.72), inset 0 -2px 0 rgba(255,214,84,.72);
+    }
+    tr.row-selected-employee td:first-child{
+      box-shadow:inset 3px 0 0 rgba(255,214,84,.85), inset 0 2px 0 rgba(255,214,84,.72), inset 0 -2px 0 rgba(255,214,84,.72);
+      border-top-left-radius:12px;
+      border-bottom-left-radius:12px;
+    }
+    tr.row-selected-employee td:last-child{
+      box-shadow:inset -3px 0 0 rgba(255,214,84,.85), inset 0 2px 0 rgba(255,214,84,.72), inset 0 -2px 0 rgba(255,214,84,.72);
+      border-top-right-radius:12px;
+      border-bottom-right-radius:12px;
     }
     tr.row-selected-employee td.name{
-      background:rgba(255,225,120,.12);
-      color:#fff3bf;
+      background:rgba(255,214,84,.16);
+      color:#fff1a8;
     }
     tr.row-selected-employee .in{
-      box-shadow:0 0 0 1px rgba(255,225,120,.45);
+      background:rgba(255,214,84,.05);
+      border-color:transparent;
+      box-shadow:none;
     }
     tr.row-selected-employee .in:focus{
-      border-color:rgba(255,225,120,.9);
-      box-shadow:0 0 0 3px rgba(255,225,120,.22);
+      border-color:rgba(255,214,84,.9);
+      box-shadow:0 0 0 3px rgba(255,214,84,.22);
     }
     .in.code-u{background:var(--code-u-bg); border-color:var(--code-u-border); color:#d9ffe8; font-weight:800}
     .in.code-o{background:var(--code-o-bg); border-color:var(--code-o-border); color:#efe5ff; font-weight:800}
@@ -1435,6 +1445,11 @@ function normalizeCellValue(val){
   let currentMonth = TODAY_MONTH;
   let currentView = "month";
   let selectedEmployee = localStorage.getItem('nadgodziny_selected_employee') || '';
+
+  function forceTodayPeriod(){
+    if (YEARS.includes(TODAY_YEAR)) currentYear = TODAY_YEAR;
+    currentMonth = TODAY_MONTH;
+  }
   let selectedAbsenceEmp = null;
   let adminLockYear = currentYear;
   let adminLockSettingsCache = {};
@@ -2470,9 +2485,13 @@ if(typed !== phrase){
     }
   }
 
-  function setMonthPreview(){
-    // Panel podglądu miesiąca został usunięty — zachowujemy funkcję dla kompatybilności wywołań.
-    return;
+  function setMonthPreview(locked = isMonthLocked(currentMonth)){
+    if(!els.mainTitle) return;
+    const lockHtml = locked ? ` <span style="color:#ffb4b4">🔒 (zamknięty)</span>` : ``;
+    const previewHtml = !selectedEmployee
+      ? ` <span style="color:#ff7b7b; font-size:13px; font-weight:800">(Podgląd miesiąca — aby wypełnić wybierz pracownika)</span>`
+      : ``;
+    els.mainTitle.innerHTML = `${monthNames[currentMonth-1]} ${currentYear}${lockHtml}${previewHtml}`;
   }
 
   function calcMonthTotalsForEmp(m, emp){
@@ -2493,8 +2512,7 @@ if(typed !== phrase){
     const m = currentMonth;
     const dim = daysInMonth(currentYear,m);
     const locked = isMonthLocked(m);
-    els.mainTitle.textContent = `${monthNames[m-1]} ${currentYear}` + (locked ? `  🔒 (zamknięty)` : ``);
-    setMonthPreview();
+    setMonthPreview(locked);
 
     const blocks = [
       {label:`Dni 1–16`, start:1, end:16},
@@ -2964,9 +2982,13 @@ if(typed !== phrase){
     }
   }
 
-  function setMonthPreview(){
-    // Panel podglądu miesiąca został usunięty — zachowujemy funkcję dla kompatybilności wywołań.
-    return;
+  function setMonthPreview(locked = isMonthLocked(currentMonth)){
+    if(!els.mainTitle) return;
+    const lockHtml = locked ? ` <span style="color:#ffb4b4">🔒 (zamknięty)</span>` : ``;
+    const previewHtml = !selectedEmployee
+      ? ` <span style="color:#ff7b7b; font-size:13px; font-weight:800">(Podgląd miesiąca — aby wypełnić wybierz pracownika)</span>`
+      : ``;
+    els.mainTitle.innerHTML = `${monthNames[currentMonth-1]} ${currentYear}${lockHtml}${previewHtml}`;
   }
 
   function calcMonthTotalsForEmp(m, emp){
@@ -2987,8 +3009,7 @@ if(typed !== phrase){
     const m = currentMonth;
     const dim = daysInMonth(currentYear,m);
     const locked = isMonthLocked(m);
-    els.mainTitle.textContent = `${monthNames[m-1]} ${currentYear}` + (locked ? `  🔒 (zamknięty)` : ``);
-    setMonthPreview();
+    setMonthPreview(locked);
 
     const blocks = [
       {label:`Dni 1–16`, start:1, end:16},
@@ -3811,6 +3832,8 @@ if(typed !== phrase){
   if(els.exportJsonBackupBtn) els.exportJsonBackupBtn.addEventListener('click', async ()=>{ try{ setExportStatus('Tworzę JSON backup…', true); const payload = await createBackupPayload('Backup JSON'); downloadBackupPayload(payload); setExportStatus('Pobrano JSON backup ✅', true); }catch(e){ console.error(e); setExportStatus(e.message || 'Nie udało się pobrać backupu JSON.', false); } });
 
 
+  forceTodayPeriod();
+  populateYearSelectors();
   render();
   refreshAdminUI();
   enforceAccessGate();
