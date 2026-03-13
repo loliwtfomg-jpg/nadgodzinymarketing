@@ -1422,11 +1422,13 @@ function normalizeCellValue(val){
   }
   function sanitizeVisibleEmployees(){
     visibleEmployees = (Array.isArray(visibleEmployees) ? visibleEmployees : []).filter(emp => employees.includes(emp));
+    if(visibleEmployeesMode !== 'all' && visibleEmployeesMode !== 'custom') visibleEmployeesMode = (visibleEmployees.length ? 'custom' : 'all');
     try{ localStorage.setItem('nadgodziny_visible_employees', JSON.stringify(visibleEmployees)); }catch(_e){}
+    try{ localStorage.setItem('nadgodziny_visible_employees_mode', visibleEmployeesMode); }catch(_e){}
   }
   function getVisibleEmployeesForTable(){
     sanitizeVisibleEmployees();
-    const list = visibleEmployees.length ? visibleEmployees.slice() : employees.slice();
+    const list = (visibleEmployeesMode === 'all') ? employees.slice() : visibleEmployees.slice();
     if(selectedEmployee && employees.includes(selectedEmployee) && !list.includes(selectedEmployee)) list.push(selectedEmployee);
     return list;
   }
@@ -1434,7 +1436,8 @@ function normalizeCellValue(val){
     if(!els.visibleEmployeesLabel) return;
     sanitizeVisibleEmployees();
     const count = visibleEmployees.length;
-    if(!count || count >= employees.length) els.visibleEmployeesLabel.textContent = 'Wszyscy';
+    if(visibleEmployeesMode === 'all' || count >= employees.length) els.visibleEmployeesLabel.textContent = 'Wszyscy';
+    else if(count === 0) els.visibleEmployeesLabel.textContent = 'Brak';
     else if(count === 1) els.visibleEmployeesLabel.textContent = visibleEmployees[0];
     else els.visibleEmployeesLabel.textContent = `${count} osoby`;
   }
@@ -1442,13 +1445,14 @@ function normalizeCellValue(val){
     if(!els.visibleEmployeesList) return;
     sanitizeVisibleEmployees();
     els.visibleEmployeesList.innerHTML = employees.map(emp=>{
-      const checked = !visibleEmployees.length || visibleEmployees.includes(emp);
+      const checked = (visibleEmployeesMode === 'all') || visibleEmployees.includes(emp);
       return `<label class="empfilter-item"><input type="checkbox" data-visible-emp="${attrEscape(emp)}" ${checked?'checked':''}><span>${escapeHtml(emp)}</span></label>`;
     }).join('');
     updateVisibleEmployeesLabel();
   }
-  function setVisibleEmployees(next){
+  function setVisibleEmployees(next, modeOverride){
     visibleEmployees = Array.isArray(next) ? next.filter(emp=>employees.includes(emp)) : [];
+    visibleEmployeesMode = modeOverride || (visibleEmployees.length >= employees.length ? 'all' : 'custom');
     sanitizeVisibleEmployees();
     populateVisibleEmployeesFilter();
     render();
@@ -1671,8 +1675,15 @@ function normalizeCellValue(val){
   let currentMonth = TODAY_MONTH;
   let currentView = "month";
   let selectedEmployee = localStorage.getItem('nadgodziny_selected_employee') || '';
+  let visibleEmployeesMode = 'all';
   let visibleEmployees = [];
-  try{ const raw = JSON.parse(localStorage.getItem('nadgodziny_visible_employees') || '[]'); visibleEmployees = Array.isArray(raw) ? raw.map(String) : []; }catch(_e){ visibleEmployees = []; }
+  try{
+    const rawMode = String(localStorage.getItem('nadgodziny_visible_employees_mode') || '').trim();
+    if(rawMode === 'all' || rawMode === 'custom') visibleEmployeesMode = rawMode;
+    const raw = JSON.parse(localStorage.getItem('nadgodziny_visible_employees') || '[]');
+    visibleEmployees = Array.isArray(raw) ? raw.map(String) : [];
+    if(!rawMode) visibleEmployeesMode = visibleEmployees.length ? 'custom' : 'all';
+  }catch(_e){ visibleEmployeesMode = 'all'; visibleEmployees = []; }
 
   function forceTodayPeriod(){
     if (YEARS.includes(TODAY_YEAR)) currentYear = TODAY_YEAR;
@@ -3967,18 +3978,19 @@ function normalizeCellValue(val){
       const t = e.target;
       if(!(t && t.matches && t.matches('input[data-visible-emp]'))) return;
       const emp = String(t.getAttribute('data-visible-emp') || '');
-      const current = new Set(visibleEmployees.length ? visibleEmployees : employees);
+      const current = new Set((visibleEmployeesMode === 'all') ? employees : visibleEmployees);
       if(t.checked) current.add(emp); else current.delete(emp);
       const next = employees.filter(name=>current.has(name));
-      if(next.length === employees.length || next.length === 0) visibleEmployees = [];
-      else visibleEmployees = next;
+      visibleEmployees = next;
+      visibleEmployeesMode = (next.length === employees.length) ? 'all' : 'custom';
       sanitizeVisibleEmployees();
       updateVisibleEmployeesLabel();
+      populateVisibleEmployeesFilter();
       render();
     });
   }
-  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees(employees.slice()));
-  if(els.visibleEmployeesClearBtn) els.visibleEmployeesClearBtn.addEventListener('click', ()=> setVisibleEmployees([]));
+  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees(employees.slice(), 'all'));
+  if(els.visibleEmployeesClearBtn) els.visibleEmployeesClearBtn.addEventListener('click', ()=> setVisibleEmployees([], 'custom'));
   if(els.visibleEmployeesCloseBtn) els.visibleEmployeesCloseBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(els.visibleEmployeesBox) els.visibleEmployeesBox.open = false; });
   if(els.adminLockYearSel) els.adminLockYearSel.addEventListener('change', (e)=> loadAdminLockYearSettings(e.target.value));
   if(els.adminYearLockChk) els.adminYearLockChk.addEventListener('change', async ()=>{
