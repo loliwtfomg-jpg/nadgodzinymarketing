@@ -1568,7 +1568,7 @@ function normalizeCellValue(val){
     } };
     for(let m=1;m<=12;m++){
       s.months[m] = {};
-      for(const emp of getVisibleEmployeesForTable()){
+      for(const emp of employees){
         s.months[m][emp] = Array(31).fill("");
       }
     }
