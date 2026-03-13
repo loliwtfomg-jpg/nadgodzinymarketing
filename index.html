@@ -492,6 +492,18 @@ tr.row-selected-employee .in:focus{
       box-shadow:12px 0 22px rgba(0,0,0,.20), inset -1px 0 0 rgba(255,255,255,.08);
     }
 
+    .empfilter{position:relative}
+    .empfilter > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted)}
+    .empfilter > summary::-webkit-details-marker{display:none}
+    .empfilter-panel{position:absolute; top:calc(100% + 8px); left:0; min-width:280px; max-width:340px; background:linear-gradient(180deg,#152746,#101f39); border:1px solid rgba(255,255,255,.12); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.35); padding:12px; z-index:130}
+    .empfilter-actions{display:flex; gap:8px; margin-bottom:10px}
+    .empfilter-actions button{flex:1; min-height:36px}
+    .empfilter-list{display:grid; gap:8px; max-height:260px; overflow:auto; padding-right:4px}
+    .empfilter-item{display:flex; align-items:center; gap:10px; font-size:13px; color:#eaf1ff; user-select:none}
+    .empfilter-item input{width:16px; height:16px; accent-color:#6ea8ff}
+    .empfilter-meta{font-size:11px; color:var(--muted)}
+    .bulk-top{z-index:12050 !important}
+
 </style>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -519,6 +531,19 @@ tr.row-selected-employee .in:focus{
         <select id="employeeSel">
           <option value="">Wybierz pracownika</option>
         </select>
+      </div>
+      <div class="pill">
+        <details id="visibleEmployeesBox" class="empfilter">
+          <summary><span>Podgląd osób:</span> <b id="visibleEmployeesLabel" style="color:#fff">Wszyscy</b></summary>
+          <div class="empfilter-panel">
+            <div class="empfilter-actions">
+              <button id="visibleEmployeesAllBtn" type="button">Wszyscy</button>
+              <button id="visibleEmployeesClearBtn" type="button">Wyczyść</button>
+            </div>
+            <div id="visibleEmployeesList" class="empfilter-list"></div>
+            <div class="empfilter-meta">Wybierz tylko osoby, które chcesz widzieć w głównej tabeli. Wybrany pracownik do edycji pozostanie widoczny.</div>
+          </div>
+        </details>
       </div>
       <div class="pill">
         <span style="font-size:12px;color:var(--muted)">Widok:</span>
@@ -806,7 +831,7 @@ tr.row-selected-employee .in:focus{
 
 
 <!-- BULK MODAL -->
-  <div id="bulkModal" class="modal" aria-hidden="true" style="display:none">
+  <div id="bulkModal" class="modal bulk-top" aria-hidden="true" style="display:none">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
       <div class="modal-head">
         <h3 id="bulkTitle">Masowe wpisy</h3>
@@ -1029,6 +1054,11 @@ tr.row-selected-employee .in:focus{
     bulkTo: document.getElementById('bulkTo'),
     bulkVal: document.getElementById('bulkVal'),
     bulkHint: document.getElementById('bulkHint'),
+    visibleEmployeesBox: document.getElementById('visibleEmployeesBox'),
+    visibleEmployeesLabel: document.getElementById('visibleEmployeesLabel'),
+    visibleEmployeesList: document.getElementById('visibleEmployeesList'),
+    visibleEmployeesAllBtn: document.getElementById('visibleEmployeesAllBtn'),
+    visibleEmployeesClearBtn: document.getElementById('visibleEmployeesClearBtn'),
 
     // Security
     secAdminOld: document.getElementById('secAdminOld'),
@@ -1349,6 +1379,39 @@ function normalizeCellValue(val){
       .concat(employees.map(emp=>`<option value="${attrEscape(emp)}" ${emp===selectedEmployee?'selected':''}>${emp}</option>`));
     els.employeeSel.innerHTML = options.join('');
   }
+  function sanitizeVisibleEmployees(){
+    visibleEmployees = (Array.isArray(visibleEmployees) ? visibleEmployees : []).filter(emp => employees.includes(emp));
+    try{ localStorage.setItem('nadgodziny_visible_employees', JSON.stringify(visibleEmployees)); }catch(_e){}
+  }
+  function getVisibleEmployeesForTable(){
+    sanitizeVisibleEmployees();
+    const list = visibleEmployees.length ? visibleEmployees.slice() : employees.slice();
+    if(selectedEmployee && employees.includes(selectedEmployee) && !list.includes(selectedEmployee)) list.push(selectedEmployee);
+    return list;
+  }
+  function updateVisibleEmployeesLabel(){
+    if(!els.visibleEmployeesLabel) return;
+    sanitizeVisibleEmployees();
+    const count = visibleEmployees.length;
+    if(!count || count >= employees.length) els.visibleEmployeesLabel.textContent = 'Wszyscy';
+    else if(count === 1) els.visibleEmployeesLabel.textContent = visibleEmployees[0];
+    else els.visibleEmployeesLabel.textContent = `${count} osoby`;
+  }
+  function populateVisibleEmployeesFilter(){
+    if(!els.visibleEmployeesList) return;
+    sanitizeVisibleEmployees();
+    els.visibleEmployeesList.innerHTML = employees.map(emp=>{
+      const checked = !visibleEmployees.length || visibleEmployees.includes(emp);
+      return `<label class="empfilter-item"><input type="checkbox" data-visible-emp="${attrEscape(emp)}" ${checked?'checked':''}><span>${escapeHtml(emp)}</span></label>`;
+    }).join('');
+    updateVisibleEmployeesLabel();
+  }
+  function setVisibleEmployees(next){
+    visibleEmployees = Array.isArray(next) ? next.filter(emp=>employees.includes(emp)) : [];
+    sanitizeVisibleEmployees();
+    populateVisibleEmployeesFilter();
+    render();
+  }
 
   function getMonthTableMode(){
     return (state && state.settings && state.settings.monthTableMode === 'single') ? 'single' : 'split';
@@ -1505,7 +1568,7 @@ function normalizeCellValue(val){
     } };
     for(let m=1;m<=12;m++){
       s.months[m] = {};
-      for(const emp of employees){
+      for(const emp of getVisibleEmployeesForTable()){
         s.months[m][emp] = Array(31).fill("");
       }
     }
@@ -1567,6 +1630,8 @@ function normalizeCellValue(val){
   let currentMonth = TODAY_MONTH;
   let currentView = "month";
   let selectedEmployee = localStorage.getItem('nadgodziny_selected_employee') || '';
+  let visibleEmployees = [];
+  try{ const raw = JSON.parse(localStorage.getItem('nadgodziny_visible_employees') || '[]'); visibleEmployees = Array.isArray(raw) ? raw.map(String) : []; }catch(_e){ visibleEmployees = []; }
 
   function forceTodayPeriod(){
     if (YEARS.includes(TODAY_YEAR)) currentYear = TODAY_YEAR;
@@ -2328,6 +2393,7 @@ function normalizeCellValue(val){
     const t = e.target;
     if(t && t.classList && t.classList.contains('in') && t.dataset && t.dataset.emp){
       __lastCell = { emp: t.dataset.emp, month: Number(t.dataset.month), day: Number(t.dataset.day) };
+      if(typeof t.dataset.committed === 'undefined') t.dataset.committed = String(t.value || '');
     }
   });
 
@@ -2351,17 +2417,20 @@ function normalizeCellValue(val){
     if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill("");
     const arr = state.months[m][emp];
 
+    const committed = t.dataset.committed ?? (arr[d-1] ?? '');
     const v = normalizeCellValue(t.value);
     const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
     if(blockedMsg){
       showToast(blockedMsg, false);
-      t.value = arr[d-1] ?? '';
+      t.value = committed;
+      arr[d-1] = committed;
       paintDayInput(t);
       return;
     }
     t.value = v;
     paintDayInput(t);
     arr[d-1] = v;
+    t.dataset.committed = v;
 
     // Update totals for this employee in this month (both blocks)
     const totals = calcMonthTotalsForEmp(m, emp);
@@ -2402,6 +2471,8 @@ function normalizeCellValue(val){
   }
   function openBulkModal(){
     if(!els.bulkModal) return;
+    try{ if(els.bulkModal.parentElement !== document.body) document.body.appendChild(els.bulkModal); }catch(_e){}
+    els.bulkModal.style.zIndex = '12050';
     const m = currentMonth;
     const dim = daysInMonth(currentYear, m);
     const startDay = Math.min(Math.max((__lastCell && __lastCell.month===m ? (__lastCell.day || 1) : 1), 1), dim);
@@ -2825,37 +2896,37 @@ function normalizeCellValue(val){
             input.title = selectedEmployee ? 'Możesz wpisywać tylko w wybranym wierszu pracownika.' : 'Najpierw wybierz pracownika z listy u góry.';
           }
           input.value = arr[d-1] ?? "";
+          input.dataset.committed = arr[d-1] ?? "";
           input.disabled = (d>dim) || isMonthLocked(m) || !canEditEmployee(emp);
           paintDayInput(input);
 
           input.addEventListener('input', ()=>{
-            if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; return; }
-            arr[d-1] = String(input.value || '').trim().toUpperCase();
+            if(!canEditEmployee(emp)){ input.value = input.dataset.committed ?? (arr[d-1] ?? ""); return; }
+            input.value = String(input.value || '').toUpperCase();
             paintDayInput(input);
-            const t = calcMonthTotalsForEmp(m, emp);
-            document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-              row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
-              row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
-            });
-            // buildMonths() removed to preserve focus while typing
-            setMonthPreview();
-            queueSave(1200);
           });
           // keydown handled globally (ENTER / Shift+ENTER)
           input.addEventListener('blur', ()=>{
-            if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; paintDayInput(input); return; }
+            const committed = input.dataset.committed ?? (arr[d-1] ?? "");
+            if(!canEditEmployee(emp)){ input.value = committed; paintDayInput(input); return; }
             const v = normalizeCellValue(input.value);
             const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
             if(blockedMsg){
               showToast(blockedMsg, false);
-              input.value = arr[d-1] ?? "";
+              input.value = committed;
+              arr[d-1] = committed;
               paintDayInput(input);
               return;
             }
             input.value = v;
             paintDayInput(input);
             arr[d-1] = v;
-            // buildMonths() removed to preserve focus while typing
+            input.dataset.committed = v;
+            const t = calcMonthTotalsForEmp(m, emp);
+            document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
+              row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
+              row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
+            });
             setMonthPreview();
             saveRemote(false).catch(()=>{});
             if (pendingRemote && !isEditingCell()) {
@@ -3329,37 +3400,37 @@ function normalizeCellValue(val){
             input.title = selectedEmployee ? 'Możesz wpisywać tylko w wybranym wierszu pracownika.' : 'Najpierw wybierz pracownika z listy u góry.';
           }
           input.value = arr[d-1] ?? "";
+          input.dataset.committed = arr[d-1] ?? "";
           input.disabled = (d>dim) || isMonthLocked(m) || !canEditEmployee(emp);
           paintDayInput(input);
 
           input.addEventListener('input', ()=>{
-            if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; return; }
-            arr[d-1] = String(input.value || '').trim().toUpperCase();
+            if(!canEditEmployee(emp)){ input.value = input.dataset.committed ?? (arr[d-1] ?? ""); return; }
+            input.value = String(input.value || '').toUpperCase();
             paintDayInput(input);
-            const t = calcMonthTotalsForEmp(m, emp);
-            document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-              row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
-              row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
-            });
-            // buildMonths() removed to preserve focus while typing
-            setMonthPreview();
-            queueSave(1200);
           });
           // keydown handled globally (ENTER / Shift+ENTER)
           input.addEventListener('blur', ()=>{
-            if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; paintDayInput(input); return; }
+            const committed = input.dataset.committed ?? (arr[d-1] ?? "");
+            if(!canEditEmployee(emp)){ input.value = committed; paintDayInput(input); return; }
             const v = normalizeCellValue(input.value);
             const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
             if(blockedMsg){
               showToast(blockedMsg, false);
-              input.value = arr[d-1] ?? "";
+              input.value = committed;
+              arr[d-1] = committed;
               paintDayInput(input);
               return;
             }
             input.value = v;
             paintDayInput(input);
             arr[d-1] = v;
-            // buildMonths() removed to preserve focus while typing
+            input.dataset.committed = v;
+            const t = calcMonthTotalsForEmp(m, emp);
+            document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
+              row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
+              row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
+            });
             setMonthPreview();
             saveRemote(false).catch(()=>{});
             if (pendingRemote && !isEditingCell()) {
@@ -3651,7 +3722,7 @@ function normalizeCellValue(val){
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    for(const emp of employees){
+    for(const emp of getVisibleEmployeesForTable()){
       const tr=document.createElement('tr');
       tr.setAttribute('data-emp', emp);
       tr.setAttribute('data-month', String(m));
@@ -3693,34 +3764,36 @@ function normalizeCellValue(val){
           input.title = selectedEmployee ? 'Możesz wpisywać tylko w wybranym wierszu pracownika.' : 'Najpierw wybierz pracownika z listy u góry.';
         }
         input.value = arr[d-1] ?? '';
+        input.dataset.committed = arr[d-1] ?? '';
         input.disabled = (d>dim) || isMonthLocked(m) || !canEditEmployee(emp);
         paintDayInput(input);
 
         input.addEventListener('input', ()=>{
-          if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ''; return; }
-          arr[d-1] = String(input.value || '').trim().toUpperCase();
+          if(!canEditEmployee(emp)){ input.value = input.dataset.committed ?? (arr[d-1] ?? ''); return; }
+          input.value = String(input.value || '').toUpperCase();
           paintDayInput(input);
-          const t = calcMonthTotalsForEmp(m, emp);
-          document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
-            row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
-            row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
-          });
-          setMonthPreview();
-          queueSave(1200);
         });
         input.addEventListener('blur', ()=>{
-          if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ''; paintDayInput(input); return; }
+          const committed = input.dataset.committed ?? (arr[d-1] ?? '');
+          if(!canEditEmployee(emp)){ input.value = committed; paintDayInput(input); return; }
           const v = normalizeCellValue(input.value);
           const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
           if(blockedMsg){
             showToast(blockedMsg, false);
-            input.value = arr[d-1] ?? '';
+            input.value = committed;
+            arr[d-1] = committed;
             paintDayInput(input);
             return;
           }
           input.value = v;
           paintDayInput(input);
           arr[d-1] = v;
+          input.dataset.committed = v;
+          const t = calcMonthTotalsForEmp(m, emp);
+          document.querySelectorAll(`tr[data-emp="${cssEscape(emp)}"][data-month="${m}"]`).forEach(row=>{
+            row.querySelector('[data-role="saldo"]').innerHTML = `<span class="saldo ${t.cls}">${fmt(t.saldo)}</span>`;
+            row.querySelector('[data-role="status"]').innerHTML = `<span class="status ${t.cls}">${t.status}</span>`;
+          });
           setMonthPreview();
           saveRemote(false).catch(()=>{});
           if (pendingRemote && !isEditingCell()) {
@@ -3776,6 +3849,7 @@ function normalizeCellValue(val){
     applyCodeColors();
     populateYearSelectors();
     populateEmployeeSelector();
+    populateVisibleEmployeesFilter();
     if(els.tableWrap) els.tableWrap.classList.toggle('single-table-mode', currentView==="month" && isSingleMonthTableView());
     buildMonths();
     if(currentView==="month") renderMonth();
@@ -3813,8 +3887,26 @@ function normalizeCellValue(val){
     selectedEmployee = String(e.target.value || '');
     if(selectedEmployee) localStorage.setItem('nadgodziny_selected_employee', selectedEmployee);
     else localStorage.removeItem('nadgodziny_selected_employee');
+    updateVisibleEmployeesLabel();
     render();
   });
+  if(els.visibleEmployeesList){
+    els.visibleEmployeesList.addEventListener('change', (e)=>{
+      const t = e.target;
+      if(!(t && t.matches && t.matches('input[data-visible-emp]'))) return;
+      const emp = String(t.getAttribute('data-visible-emp') || '');
+      const current = new Set(visibleEmployees.length ? visibleEmployees : employees);
+      if(t.checked) current.add(emp); else current.delete(emp);
+      const next = employees.filter(name=>current.has(name));
+      if(next.length === employees.length || next.length === 0) visibleEmployees = [];
+      else visibleEmployees = next;
+      sanitizeVisibleEmployees();
+      updateVisibleEmployeesLabel();
+      render();
+    });
+  }
+  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees([]));
+  if(els.visibleEmployeesClearBtn) els.visibleEmployeesClearBtn.addEventListener('click', ()=> setVisibleEmployees([]));
   if(els.adminLockYearSel) els.adminLockYearSel.addEventListener('change', (e)=> loadAdminLockYearSettings(e.target.value));
   if(els.adminYearLockChk) els.adminYearLockChk.addEventListener('change', async ()=>{
     if(!isAdmin()) return;
