@@ -509,6 +509,22 @@ tr.row-selected-employee .in:focus{
     .empfilter-item{display:flex; align-items:center; gap:10px; font-size:13px; color:#eaf1ff; user-select:none}
     .empfilter-item input{width:16px; height:16px; accent-color:#6ea8ff}
     .empfilter-meta{font-size:11px; color:var(--muted)}
+    .empfilter-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+    .empfilter-title{font-size:13px; font-weight:800; color:#fff}
+    .empfilter-close{width:32px; height:32px; border-radius:10px; display:grid; place-items:center; padding:0; font-size:18px; line-height:1; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:#fff; cursor:pointer}
+    .empfilter-close:hover{background:rgba(255,255,255,.12)}
+    .bottom-legend{margin-top:18px; padding:14px 16px; border:1px solid rgba(255,255,255,.10); border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02))}
+    .bottom-legend h4{margin:0 0 10px; font-size:14px; color:#fff}
+    .legend-grid{display:flex; flex-wrap:wrap; gap:10px 12px}
+    .legend-chip{display:inline-flex; align-items:center; gap:8px; min-height:34px; padding:7px 11px; border-radius:12px; border:1px solid rgba(255,255,255,.12); font-size:13px; color:#eaf1ff; white-space:nowrap}
+    .legend-dot{width:14px; height:14px; border-radius:5px; border:1px solid rgba(255,255,255,.18); flex:0 0 auto}
+    .legend-dot.code-u{background:var(--code-u-bg); border-color:var(--code-u-border)}
+    .legend-dot.code-up{background:var(--code-up-bg); border-color:var(--code-up-border)}
+    .legend-dot.code-o{background:var(--code-o-bg); border-color:var(--code-o-border)}
+    .legend-dot.code-l4{background:var(--code-l4-bg); border-color:var(--code-l4-border)}
+    .legend-dot.code-ut{background:var(--code-ut-bg); border-color:var(--code-ut-border)}
+    .legend-dot.code-t{background:var(--code-t-bg); border-color:var(--code-t-border)}
+    .legend-dot.code-z{background:var(--code-z-bg); border-color:var(--code-z-border)}
     .bulk-top{z-index:12050 !important}
 
 </style>
@@ -543,6 +559,10 @@ tr.row-selected-employee .in:focus{
         <details id="visibleEmployeesBox" class="empfilter">
           <summary><span>Podgląd osób:</span> <b id="visibleEmployeesLabel" style="color:#fff">Wszyscy</b></summary>
           <div class="empfilter-panel">
+            <div class="empfilter-head">
+              <div class="empfilter-title">Podgląd osób</div>
+              <button id="visibleEmployeesCloseBtn" class="empfilter-close" type="button" aria-label="Zamknij">✕</button>
+            </div>
             <div class="empfilter-actions">
               <button id="visibleEmployeesAllBtn" type="button">Wszyscy</button>
               <button id="visibleEmployeesClearBtn" type="button">Wyczyść</button>
@@ -586,8 +606,21 @@ tr.row-selected-employee .in:focus{
 
       <div class="tablewrap" id="tableWrap"></div>
 
+      <section class="bottom-legend" aria-label="Legenda kodów">
+        <h4>Legenda kodów</h4>
+        <div class="legend-grid">
+          <span class="legend-chip"><span class="legend-dot code-u"></span><b>U</b> urlop</span>
+          <span class="legend-chip"><span class="legend-dot code-up"></span><b>UP</b> urlop planowany</span>
+          <span class="legend-chip"><span class="legend-dot code-o"></span><b>O</b> opieka</span>
+          <span class="legend-chip"><span class="legend-dot code-l4"></span><b>L4</b> chorobowe</span>
+          <span class="legend-chip"><span class="legend-dot code-ut"></span><b>UT</b> urlop za targi</span>
+          <span class="legend-chip"><span class="legend-dot code-t"></span><b>T</b> targi</span>
+          <span class="legend-chip"><span class="legend-dot code-z"></span><b>Z</b> zdalnie</span>
+        </div>
+      </section>
+
       <div class="footer">
-        <div>Dane zapisują się lokalnie w przeglądarce (localStorage). Kliknij “Zapisz teraz”.</div>
+        <div>Dane zapisują się automatycznie we wspólnej bazie Firebase. „Zapisz teraz” tylko ręcznie wymusza natychmiastowy zapis.</div>
         <div>© 2025–2035</div>
       </div>
     </main>
@@ -1066,6 +1099,7 @@ tr.row-selected-employee .in:focus{
     visibleEmployeesList: document.getElementById('visibleEmployeesList'),
     visibleEmployeesAllBtn: document.getElementById('visibleEmployeesAllBtn'),
     visibleEmployeesClearBtn: document.getElementById('visibleEmployeesClearBtn'),
+    visibleEmployeesCloseBtn: document.getElementById('visibleEmployeesCloseBtn'),
 
     // Security
     secAdminOld: document.getElementById('secAdminOld'),
@@ -3943,8 +3977,9 @@ function normalizeCellValue(val){
       render();
     });
   }
-  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees([]));
+  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees(employees.slice()));
   if(els.visibleEmployeesClearBtn) els.visibleEmployeesClearBtn.addEventListener('click', ()=> setVisibleEmployees([]));
+  if(els.visibleEmployeesCloseBtn) els.visibleEmployeesCloseBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(els.visibleEmployeesBox) els.visibleEmployeesBox.open = false; });
   if(els.adminLockYearSel) els.adminLockYearSel.addEventListener('change', (e)=> loadAdminLockYearSettings(e.target.value));
   if(els.adminYearLockChk) els.adminYearLockChk.addEventListener('change', async ()=>{
     if(!isAdmin()) return;
