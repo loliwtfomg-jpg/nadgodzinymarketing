@@ -821,19 +821,19 @@ tr.row-selected-employee .in:focus{
             <select id="bulkEmployee" class="btn" style="width:100%;min-height:44px"></select>
           </div>
           <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Miesiąc</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Zakres / rok</div>
             <div id="bulkMonthLabel" class="admin-note" style="min-height:44px;display:flex;align-items:center"></div>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Od dnia</div>
-            <input id="bulkFrom" class="in" type="number" min="1" max="31" value="1" style="text-align:left;padding-left:10px" />
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Od daty</div>
+            <input id="bulkFrom" class="modal-input" type="date" style="text-align:left;padding-left:10px" />
           </div>
           <div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Do dnia</div>
-            <input id="bulkTo" class="in" type="number" min="1" max="31" value="1" style="text-align:left;padding-left:10px" />
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Do daty</div>
+            <input id="bulkTo" class="modal-input" type="date" style="text-align:left;padding-left:10px" />
           </div>
         </div>
 
@@ -922,7 +922,7 @@ tr.row-selected-employee .in:focus{
     "Agnes Blau",
     "Aga Bor",
     "Hana Dana",
-    "Bucku Design",
+    "Nitka",
     "Justi",
     "Kosik",
     "Martusia",
@@ -935,7 +935,8 @@ tr.row-selected-employee .in:focus{
     "EMP-002": "Agnes Blau",
     "EMP-003": "Aga Bor",
     "EMP-004": "Hana Dana",
-    "EMP-005": "Bucku Design",
+    "EMP-005": "Nitka",
+    "Bucku Design": "Nitka",
     "EMP-006": "Justi",
     "EMP-007": "Kosik",
     "EMP-008": "Martusia",
@@ -945,7 +946,7 @@ tr.row-selected-employee .in:focus{
     "Anita Bucka": "Agnes Blau",
     "Joanna Knycz": "Aga Bor",
     "Agnieszka Panek": "Hana Dana",
-    "Marta Bogusz": "Bucku Design",
+    "Marta Bogusz": "Nitka",
     "Rafał Kukla": "Justi",
     "Maria Halotta": "Kosik",
     "Zuzanna Jadczyk": "Martusia",
@@ -1073,21 +1074,6 @@ tr.row-selected-employee .in:focus{
     accessMsg: document.getElementById('accessMsg'),
 
   };
-
-  // Naprawa: masowe wpisy muszą działać niezależnie od panelu admina.
-  // W tej wersji HTML modal bulk bywa zagnieżdżony w modalu admina przez układ znaczników,
-  // więc przenosimy go jawnie do <body>, aby otwierał się od razu po kliknięciu przycisku.
-  (function ensureBulkModalDetached(){
-    try{
-      if(els.bulkModal && els.bulkModal.parentElement !== document.body){
-        document.body.appendChild(els.bulkModal);
-      }
-      if(els.bulkModal){
-        els.bulkModal.style.zIndex = '260';
-      }
-    }catch(_e){}
-  })();
-
 
   // ====== UI copy tweaks (online/shared version) ======
   els.yearLabel.textContent = currentYear;
@@ -1286,6 +1272,7 @@ tr.row-selected-employee .in:focus{
     add(new Date(year,7,15), "Wniebowzięcie NMP");
     add(new Date(year,10,1), "Wszystkich Świętych");
     add(new Date(year,10,11), "Narodowe Święto Niepodległości");
+    if(year >= 2025) add(new Date(year,11,24), "Wigilia");
     add(new Date(year,11,25), "Boże Narodzenie (1)");
     add(new Date(year,11,26), "Boże Narodzenie (2)");
     return map;
@@ -1298,6 +1285,17 @@ tr.row-selected-employee .in:focus{
   }
   function holidayName(y,m,d){
     return getHolidayMap(y)[fmtDateKey(y,m,d)] || "";
+  }
+  function isNonWorkingDay(y,m,d){
+    return isWeekend(y,m,d) || !!holidayName(y,m,d);
+  }
+  function isRestrictedCodeOnNonWorkingDay(code, y, m, d){
+    return !!code && ['U','UT','O','Z'].includes(code) && isNonWorkingDay(y,m,d);
+  }
+  function getRestrictedCodeMessage(code, y, m, d){
+    if(!isRestrictedCodeOnNonWorkingDay(code, y, m, d)) return '';
+    const dayLabel = holidayName(y,m,d) || (isWeekend(y,m,d) ? 'weekend' : 'dzień wolny');
+    return `Kodu ${code} nie można wpisać w dniu wolnym (${dayLabel}). Dozwolone są m.in. T, L4 i UP.`;
   }
 function normalizeCellValue(val){
     return parseCompositeCell(val).normalized;
@@ -2354,6 +2352,13 @@ function normalizeCellValue(val){
     const arr = state.months[m][emp];
 
     const v = normalizeCellValue(t.value);
+    const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
+    if(blockedMsg){
+      showToast(blockedMsg, false);
+      t.value = arr[d-1] ?? '';
+      paintDayInput(t);
+      return;
+    }
     t.value = v;
     paintDayInput(t);
     arr[d-1] = v;
@@ -2400,17 +2405,25 @@ function normalizeCellValue(val){
     const m = currentMonth;
     const dim = daysInMonth(currentYear, m);
     const startDay = Math.min(Math.max((__lastCell && __lastCell.month===m ? (__lastCell.day || 1) : 1), 1), dim);
+    const startIso = fmtDateKey(currentYear, m, startDay);
     populateBulkEmployeeSelect();
-    if(els.bulkMonthLabel) els.bulkMonthLabel.textContent = `${monthNames[m-1]} ${currentYear}`;
-    if(els.bulkFrom) { els.bulkFrom.max = String(dim); els.bulkFrom.value = String(startDay); }
-    if(els.bulkTo) { els.bulkTo.max = String(dim); els.bulkTo.value = String(startDay); }
+    if(els.bulkMonthLabel) els.bulkMonthLabel.textContent = `Rok ${currentYear} • możesz zaznaczyć zakres przez kilka miesięcy`;
+    if(els.bulkFrom) {
+      els.bulkFrom.min = fmtDateKey(currentYear, 1, 1);
+      els.bulkFrom.max = fmtDateKey(currentYear, 12, 31);
+      els.bulkFrom.value = startIso;
+    }
+    if(els.bulkTo) {
+      els.bulkTo.min = fmtDateKey(currentYear, 1, 1);
+      els.bulkTo.max = fmtDateKey(currentYear, 12, 31);
+      els.bulkTo.value = startIso;
+    }
     if(els.bulkVal) { els.bulkVal.value = ''; }
     if(els.bulkHint){
-      const locked = isMonthLocked(m);
       const chosen = (els.bulkEmployee && els.bulkEmployee.value) || selectedEmployee || '—';
-      els.bulkHint.innerHTML = `Pracownik: <b>${escapeHtml(chosen)}</b> • Miesiąc: <b>${monthNames[m-1]} ${currentYear}</b>` + (locked ? ` • <b style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</b>` : ` • działa bez logowania do panelu admina`);
+      els.bulkHint.innerHTML = `Pracownik: <b>${escapeHtml(chosen)}</b> • Rok: <b>${currentYear}</b> • możesz objąć kilka miesięcy jednym wpisem • działa bez logowania do panelu admina`;
     }
-    if(els.bulkApplyBtn) els.bulkApplyBtn.disabled = isMonthLocked(m);
+    if(els.bulkApplyBtn) els.bulkApplyBtn.disabled = false;
     els.bulkModal.style.display = 'flex';
     els.bulkModal.setAttribute('aria-hidden','false');
     setTimeout(()=>{ if(els.bulkEmployee && !els.bulkEmployee.value) els.bulkEmployee.focus(); else if(els.bulkVal) els.bulkVal.focus(); }, 0);
@@ -2422,24 +2435,30 @@ function normalizeCellValue(val){
   }
   function applyBulk(){
     const emp = (els.bulkEmployee?.value || selectedEmployee || (__lastCell && __lastCell.emp) || '').trim();
-    const m = currentMonth;
     if(!emp){
       showToast('Wybierz pracownika.');
       if(els.bulkEmployee) els.bulkEmployee.focus();
       return;
     }
-    const dim = daysInMonth(currentYear, m);
-    if(isMonthLocked(m)){
-      showToast('Ten miesiąc jest zamknięty. Odblokuj go w panelu admina.');
+
+    const fromIso = String(els.bulkFrom?.value || '').trim();
+    const toIso = String(els.bulkTo?.value || '').trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(fromIso) || !/^\d{4}-\d{2}-\d{2}$/.test(toIso)){
+      showToast('Wybierz poprawny zakres dat.');
       return;
     }
-    let a = parseInt(els.bulkFrom?.value || '1', 10);
-    let b = parseInt(els.bulkTo?.value || '1', 10);
-    a = isFinite(a) ? a : 1;
-    b = isFinite(b) ? b : 1;
-    a = Math.min(Math.max(a,1), dim);
-    b = Math.min(Math.max(b,1), dim);
-    if(a>b){ const t=a; a=b; b=t; }
+    let start = new Date(`${fromIso}T00:00:00`);
+    let end = new Date(`${toIso}T00:00:00`);
+    if(Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())){
+      showToast('Wybierz poprawny zakres dat.');
+      return;
+    }
+    if(start > end){ const t = start; start = end; end = t; }
+    if(start.getFullYear() !== currentYear || end.getFullYear() !== currentYear){
+      showToast(`Masowe wpisy mogą obejmować kilka miesięcy, ale w obrębie roku ${currentYear}.`);
+      return;
+    }
+
     const raw = (els.bulkVal?.value || '').trim();
     if(!raw){
       showToast('Wpisz wartość (np. U, UP, L4, 2, -5).');
@@ -2450,10 +2469,46 @@ function normalizeCellValue(val){
       showToast('Nieprawidłowy wpis. Użyj np. U, UP, L4, T, Z, 2, -5 lub T,4.');
       return;
     }
-    if(!state.months[m]) state.months[m] = {};
-    if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill('');
-    const arr = state.months[m][emp];
-    for(let d=a; d<=b; d++) arr[d-1] = v;
+
+    const code = getCodeFromCellValue(v);
+    const touchedMonths = [];
+    const touchedSet = new Set();
+    for(let dt = new Date(start.getTime()); dt <= end; dt.setDate(dt.getDate()+1)){
+      const mm = dt.getMonth()+1;
+      if(!touchedSet.has(mm)){
+        touchedSet.add(mm);
+        touchedMonths.push(mm);
+      }
+    }
+    const lockedMonths = touchedMonths.filter(mm => isMonthLocked(mm));
+    if(lockedMonths.length){
+      showToast(`Zakres obejmuje zamknięte miesiące: ${lockedMonths.map(mm=>monthNames[mm-1]).join(', ')}.`);
+      return;
+    }
+
+    let applied = 0;
+    let skipped = 0;
+    let firstApplied = null;
+    for(let dt = new Date(start.getTime()); dt <= end; dt.setDate(dt.getDate()+1)){
+      const y = dt.getFullYear();
+      const m = dt.getMonth()+1;
+      const d = dt.getDate();
+      if(isRestrictedCodeOnNonWorkingDay(code, y, m, d)){
+        skipped++;
+        continue;
+      }
+      if(!state.months[m]) state.months[m] = {};
+      if(!state.months[m][emp]) state.months[m][emp] = Array(31).fill('');
+      state.months[m][emp][d-1] = v;
+      applied++;
+      if(!firstApplied) firstApplied = {m, d};
+    }
+
+    if(!applied){
+      showToast(code ? (getRestrictedCodeMessage(code, start.getFullYear(), start.getMonth()+1, start.getDate()) || 'W wybranym zakresie nie ma dni, do których można zastosować ten kod.') : 'Nie wpisano żadnych zmian.');
+      return;
+    }
+
     if(selectedEmployee !== emp){
       selectedEmployee = emp;
       try{ localStorage.setItem('nadgodziny_selected_employee', emp); }catch(_e){}
@@ -2463,18 +2518,17 @@ function normalizeCellValue(val){
     setMonthPreview();
     queueSave(400);
     closeBulkModal();
-    const next = Math.min(b+1, dim);
-    requestCellFocus(emp, m, next);
-    showToast(`Wpisano "${v}" dla ${a}–${b}.`);
+    if(firstApplied) requestCellFocus(emp, firstApplied.m, firstApplied.d);
+    const rangeLabel = `${formatDatePL(fromIso)} – ${formatDatePL(toIso)}`;
+    showToast(skipped ? `Wpisano "${v}" dla ${applied} dni (${rangeLabel}); pominięto ${skipped} dni wolnych.` : `Wpisano "${v}" dla ${applied} dni (${rangeLabel}).`);
   }
 
   if(els.bulkEmployee){
     els.bulkEmployee.addEventListener('change', ()=>{
       if(els.bulkHint){
         const m = currentMonth;
-        const locked = isMonthLocked(m);
         const chosen = (els.bulkEmployee.value || '—');
-        els.bulkHint.innerHTML = `Pracownik: <b>${escapeHtml(chosen)}</b> • Miesiąc: <b>${monthNames[m-1]} ${currentYear}</b>` + (locked ? ` • <b style="color:#ffb4b4">MIESIĄC ZAMKNIĘTY 🔒</b>` : ` • działa bez logowania do panelu admina`);
+        els.bulkHint.innerHTML = `Pracownik: <b>${escapeHtml(chosen)}</b> • Rok: <b>${currentYear}</b> • możesz objąć kilka miesięcy jednym wpisem • działa bez logowania do panelu admina`;
       }
     });
   }
@@ -2791,6 +2845,13 @@ function normalizeCellValue(val){
           input.addEventListener('blur', ()=>{
             if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; paintDayInput(input); return; }
             const v = normalizeCellValue(input.value);
+            const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
+            if(blockedMsg){
+              showToast(blockedMsg, false);
+              input.value = arr[d-1] ?? "";
+              paintDayInput(input);
+              return;
+            }
             input.value = v;
             paintDayInput(input);
             arr[d-1] = v;
@@ -3288,6 +3349,13 @@ function normalizeCellValue(val){
           input.addEventListener('blur', ()=>{
             if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ""; paintDayInput(input); return; }
             const v = normalizeCellValue(input.value);
+            const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
+            if(blockedMsg){
+              showToast(blockedMsg, false);
+              input.value = arr[d-1] ?? "";
+              paintDayInput(input);
+              return;
+            }
             input.value = v;
             paintDayInput(input);
             arr[d-1] = v;
@@ -3643,6 +3711,13 @@ function normalizeCellValue(val){
         input.addEventListener('blur', ()=>{
           if(!canEditEmployee(emp)){ input.value = arr[d-1] ?? ''; paintDayInput(input); return; }
           const v = normalizeCellValue(input.value);
+          const blockedMsg = getRestrictedCodeMessage(getCodeFromCellValue(v), currentYear, m, d);
+          if(blockedMsg){
+            showToast(blockedMsg, false);
+            input.value = arr[d-1] ?? '';
+            paintDayInput(input);
+            return;
+          }
           input.value = v;
           paintDayInput(input);
           arr[d-1] = v;
