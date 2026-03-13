@@ -451,11 +451,17 @@ tr.row-selected-employee .in:focus{
 
 
     /* Year summary alignment */
-    .year-summary-table{table-layout:fixed; width:100%}
-    .year-summary-table th, .year-summary-table td{text-align:center; padding-left:8px; padding-right:8px}
+    .year-summary-table{table-layout:fixed; width:auto; min-width:unset; margin:0 auto}
+    .year-summary-table th, .year-summary-table td{text-align:center}
     .year-summary-table th:nth-child(1), .year-summary-table td:nth-child(1){text-align:left}
     .year-summary-table td .saldo, .year-summary-table td .status{justify-content:center}
-    .year-summary-table td.name{white-space:nowrap}
+    .year-summary-wrap{overflow-x:auto; padding-bottom:6px}
+    .summary-toggle-btn{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:10px; border:1px solid var(--line);
+      background:rgba(255,255,255,.05); color:var(--text); font-size:12px; font-weight:700; cursor:pointer;
+    }
+    .summary-toggle-btn:hover{background:rgba(255,255,255,.08)}
 
     .tablewrap.single-table-mode{overflow-x:auto; padding-bottom:10px}
     .month-single-table{min-width:1560px}
@@ -497,28 +503,12 @@ tr.row-selected-employee .in:focus{
     .empfilter > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted)}
     .empfilter > summary::-webkit-details-marker{display:none}
     .empfilter-panel{position:absolute; top:calc(100% + 8px); left:0; min-width:280px; max-width:340px; background:linear-gradient(180deg,#152746,#101f39); border:1px solid rgba(255,255,255,.12); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.35); padding:12px; z-index:130}
-    .empfilter-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
-    .empfilter-title{font-size:13px; font-weight:800; color:#fff}
-    .empfilter-close{width:32px; height:32px; border-radius:10px; display:grid; place-items:center; padding:0; font-size:18px; line-height:1; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:#fff; cursor:pointer}
-    .empfilter-close:hover{background:rgba(255,255,255,.12)}
     .empfilter-actions{display:flex; gap:8px; margin-bottom:10px}
     .empfilter-actions button{flex:1; min-height:36px}
     .empfilter-list{display:grid; gap:8px; max-height:260px; overflow:auto; padding-right:4px}
     .empfilter-item{display:flex; align-items:center; gap:10px; font-size:13px; color:#eaf1ff; user-select:none}
     .empfilter-item input{width:16px; height:16px; accent-color:#6ea8ff}
     .empfilter-meta{font-size:11px; color:var(--muted)}
-    .bottom-legend{margin-top:18px; padding:14px 16px; border:1px solid rgba(255,255,255,.10); border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02))}
-    .bottom-legend h4{margin:0 0 10px; font-size:14px; color:#fff}
-    .legend-grid{display:flex; flex-wrap:wrap; gap:10px 12px}
-    .legend-chip{display:inline-flex; align-items:center; gap:8px; min-height:34px; padding:7px 11px; border-radius:12px; border:1px solid rgba(255,255,255,.12); font-size:13px; color:#eaf1ff; white-space:nowrap}
-    .legend-dot{width:14px; height:14px; border-radius:5px; border:1px solid rgba(255,255,255,.18); flex:0 0 auto}
-    .legend-dot.code-u{background:var(--code-u-bg); border-color:var(--code-u-border)}
-    .legend-dot.code-up{background:var(--code-up-bg); border-color:var(--code-up-border)}
-    .legend-dot.code-o{background:var(--code-o-bg); border-color:var(--code-o-border)}
-    .legend-dot.code-l4{background:var(--code-l4-bg); border-color:var(--code-l4-border)}
-    .legend-dot.code-ut{background:var(--code-ut-bg); border-color:var(--code-ut-border)}
-    .legend-dot.code-t{background:var(--code-t-bg); border-color:var(--code-t-border)}
-    .legend-dot.code-z{background:var(--code-z-bg); border-color:var(--code-z-border)}
     .bulk-top{z-index:12050 !important}
 
 </style>
@@ -553,10 +543,6 @@ tr.row-selected-employee .in:focus{
         <details id="visibleEmployeesBox" class="empfilter">
           <summary><span>Podgląd osób:</span> <b id="visibleEmployeesLabel" style="color:#fff">Wszyscy</b></summary>
           <div class="empfilter-panel">
-            <div class="empfilter-head">
-              <div class="empfilter-title">Podgląd osób</div>
-              <button id="visibleEmployeesCloseBtn" class="empfilter-close" type="button" aria-label="Zamknij">✕</button>
-            </div>
             <div class="empfilter-actions">
               <button id="visibleEmployeesAllBtn" type="button">Wszyscy</button>
               <button id="visibleEmployeesClearBtn" type="button">Wyczyść</button>
@@ -600,21 +586,8 @@ tr.row-selected-employee .in:focus{
 
       <div class="tablewrap" id="tableWrap"></div>
 
-      <section class="bottom-legend" aria-label="Legenda kodów">
-        <h4>Legenda kodów</h4>
-        <div class="legend-grid">
-          <span class="legend-chip"><span class="legend-dot code-u"></span><b>U</b> urlop</span>
-          <span class="legend-chip"><span class="legend-dot code-up"></span><b>UP</b> urlop planowany</span>
-          <span class="legend-chip"><span class="legend-dot code-o"></span><b>O</b> opieka</span>
-          <span class="legend-chip"><span class="legend-dot code-l4"></span><b>L4</b> chorobowe</span>
-          <span class="legend-chip"><span class="legend-dot code-ut"></span><b>UT</b> urlop za targi</span>
-          <span class="legend-chip"><span class="legend-dot code-t"></span><b>T</b> targi</span>
-          <span class="legend-chip"><span class="legend-dot code-z"></span><b>Z</b> zdalnie</span>
-        </div>
-      </section>
-
       <div class="footer">
-        <div>Dane zapisują się automatycznie. Przycisk „Zapisz teraz” tylko wymusza natychmiastowy zapis do chmury.</div>
+        <div>Dane zapisują się lokalnie w przeglądarce (localStorage). Kliknij “Zapisz teraz”.</div>
         <div>© 2025–2035</div>
       </div>
     </main>
@@ -944,8 +917,6 @@ tr.row-selected-employee .in:focus{
   const TODAY = new Date();
   const TODAY_YEAR = TODAY.getFullYear();
   const TODAY_MONTH = TODAY.getMonth() + 1;
-  const LS_SHOW_FUTURE_SUMMARY_YEARS = 'nadgodziny.showFutureSummaryYears';
-  let showFutureSummaryYears = localStorage.getItem(LS_SHOW_FUTURE_SUMMARY_YEARS) === '1';
   let currentYear = YEARS.includes(TODAY_YEAR) ? TODAY_YEAR : YEARS[0];
   const monthNames = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
   const DB_BASE = `nadgodziny`;
@@ -1095,7 +1066,6 @@ tr.row-selected-employee .in:focus{
     visibleEmployeesList: document.getElementById('visibleEmployeesList'),
     visibleEmployeesAllBtn: document.getElementById('visibleEmployeesAllBtn'),
     visibleEmployeesClearBtn: document.getElementById('visibleEmployeesClearBtn'),
-    visibleEmployeesCloseBtn: document.getElementById('visibleEmployeesCloseBtn'),
 
     // Security
     secAdminOld: document.getElementById('secAdminOld'),
@@ -1417,38 +1387,34 @@ function normalizeCellValue(val){
     els.employeeSel.innerHTML = options.join('');
   }
   function sanitizeVisibleEmployees(){
-    if(visibleEmployees === null){
-      try{ localStorage.setItem('nadgodziny_visible_employees', '__ALL__'); }catch(_e){}
-      return;
-    }
     visibleEmployees = (Array.isArray(visibleEmployees) ? visibleEmployees : []).filter(emp => employees.includes(emp));
     try{ localStorage.setItem('nadgodziny_visible_employees', JSON.stringify(visibleEmployees)); }catch(_e){}
   }
   function getVisibleEmployeesForTable(){
     sanitizeVisibleEmployees();
-    const list = (visibleEmployees === null) ? employees.slice() : visibleEmployees.slice();
+    const list = visibleEmployees.length ? visibleEmployees.slice() : employees.slice();
     if(selectedEmployee && employees.includes(selectedEmployee) && !list.includes(selectedEmployee)) list.push(selectedEmployee);
     return list;
   }
   function updateVisibleEmployeesLabel(){
     if(!els.visibleEmployeesLabel) return;
     sanitizeVisibleEmployees();
-    if(visibleEmployees === null || visibleEmployees.length >= employees.length) els.visibleEmployeesLabel.textContent = 'Wszyscy';
-    else if(visibleEmployees.length === 0) els.visibleEmployeesLabel.textContent = 'Brak';
-    else if(visibleEmployees.length === 1) els.visibleEmployeesLabel.textContent = visibleEmployees[0];
-    else els.visibleEmployeesLabel.textContent = `${visibleEmployees.length} osoby`;
+    const count = visibleEmployees.length;
+    if(!count || count >= employees.length) els.visibleEmployeesLabel.textContent = 'Wszyscy';
+    else if(count === 1) els.visibleEmployeesLabel.textContent = visibleEmployees[0];
+    else els.visibleEmployeesLabel.textContent = `${count} osoby`;
   }
   function populateVisibleEmployeesFilter(){
     if(!els.visibleEmployeesList) return;
     sanitizeVisibleEmployees();
     els.visibleEmployeesList.innerHTML = employees.map(emp=>{
-      const checked = (visibleEmployees === null) || visibleEmployees.includes(emp);
+      const checked = !visibleEmployees.length || visibleEmployees.includes(emp);
       return `<label class="empfilter-item"><input type="checkbox" data-visible-emp="${attrEscape(emp)}" ${checked?'checked':''}><span>${escapeHtml(emp)}</span></label>`;
     }).join('');
     updateVisibleEmployeesLabel();
   }
   function setVisibleEmployees(next){
-    visibleEmployees = (next === null) ? null : (Array.isArray(next) ? next.filter(emp=>employees.includes(emp)) : []);
+    visibleEmployees = Array.isArray(next) ? next.filter(emp=>employees.includes(emp)) : [];
     sanitizeVisibleEmployees();
     populateVisibleEmployeesFilter();
     render();
@@ -1671,15 +1637,8 @@ function normalizeCellValue(val){
   let currentMonth = TODAY_MONTH;
   let currentView = "month";
   let selectedEmployee = localStorage.getItem('nadgodziny_selected_employee') || '';
-  let visibleEmployees = null;
-  try{
-    const rawStored = localStorage.getItem('nadgodziny_visible_employees');
-    if(!rawStored || rawStored === '__ALL__') visibleEmployees = null;
-    else {
-      const raw = JSON.parse(rawStored);
-      visibleEmployees = Array.isArray(raw) ? raw.map(String) : null;
-    }
-  }catch(_e){ visibleEmployees = null; }
+  let visibleEmployees = [];
+  try{ const raw = JSON.parse(localStorage.getItem('nadgodziny_visible_employees') || '[]'); visibleEmployees = Array.isArray(raw) ? raw.map(String) : []; }catch(_e){ visibleEmployees = []; }
 
   function forceTodayPeriod(){
     if (YEARS.includes(TODAY_YEAR)) currentYear = TODAY_YEAR;
@@ -3195,6 +3154,20 @@ function normalizeCellValue(val){
     els.tableWrap.appendChild(host);
   }
 
+  const SUMMARY_FUTURE_YEARS_KEY = 'summary_show_future_years_v1';
+  function isShowingFutureYears(){
+    try{ return localStorage.getItem(SUMMARY_FUTURE_YEARS_KEY)==='1'; }catch(_){ return false; }
+  }
+  function setShowingFutureYears(v){
+    try{ localStorage.setItem(SUMMARY_FUTURE_YEARS_KEY, v ? '1' : '0'); }catch(_){ }
+  }
+  function getVisibleSummaryYears(){
+    if(isShowingFutureYears()) return YEARS.slice();
+    const nowYear = new Date().getFullYear();
+    const vis = YEARS.filter(y=>y<=nowYear);
+    return vis.length ? vis : [YEARS[0]];
+  }
+
   async function buildPeriodSummaryData(){
     const results = {};
     YEARS.forEach(y=>{
@@ -3240,14 +3213,12 @@ function normalizeCellValue(val){
   }
 
   async function renderPeriodSummary(){
-    const visibleYears = YEARS.filter(y => showFutureSummaryYears || y <= TODAY_YEAR);
-    const summaryYears = visibleYears.length ? visibleYears : [YEARS[0]];
-    const lastVisibleYear = summaryYears[summaryYears.length-1];
-    els.mainTitle.textContent = `Podsumowanie całego okresu ${YEARS[0]}–${lastVisibleYear}`;
+    const visibleYears = getVisibleSummaryYears();
+    els.mainTitle.textContent = `Podsumowanie całego okresu ${visibleYears[0]}–${visibleYears[visibleYears.length-1]}`;
     setMonthPreview();
     const loading = document.createElement('div');
     loading.className='monthblock';
-    loading.innerHTML = `<div class="blockhead"><div><b>Podsumowanie całego okresu</b></div><div>ładowanie danych…</div></div><div style="padding:16px;color:var(--muted)">Pobieram salda dla lat ${YEARS[0]}–${lastVisibleYear}.</div>`;
+    loading.innerHTML = `<div class="blockhead"><div><b>Podsumowanie całego okresu</b></div><div>ładowanie danych…</div></div><div style="padding:16px;color:var(--muted)">Pobieram salda dla wszystkich lat ${visibleYears[0]}–${visibleYears[visibleYears.length-1]}.</div>`;
     els.tableWrap.innerHTML='';
     els.tableWrap.appendChild(loading);
 
@@ -3257,33 +3228,38 @@ function normalizeCellValue(val){
     mb.className='monthblock';
     const bh = document.createElement('div');
     bh.className='blockhead';
-    bh.innerHTML = `<div><b>Podsumowanie całego okresu</b> • tylko odczyt</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end"><span>saldo z lat ${YEARS[0]}–${lastVisibleYear}</span><button id="toggleFutureSummaryYearsBtn" type="button" class="btn" style="padding:8px 12px">${showFutureSummaryYears ? 'Ukryj przyszłe lata' : 'Pokaż przyszłe lata'}</button></div>`;
+    const right = document.createElement('div');
+    right.style.display='flex';
+    right.style.alignItems='center';
+    right.style.gap='10px';
+    const meta = document.createElement('div');
+    meta.textContent = `saldo z lat ${visibleYears[0]}–${visibleYears[visibleYears.length-1]}`;
+    const toggle = document.createElement('button');
+    toggle.type='button';
+    toggle.className='summary-toggle-btn';
+    toggle.textContent = isShowingFutureYears() ? 'Ukryj przyszłe lata' : 'Pokaż przyszłe lata';
+    toggle.addEventListener('click', ()=>{ setShowingFutureYears(!isShowingFutureYears()); render(); });
+    bh.innerHTML = `<div><b>Podsumowanie całego okresu</b> • tylko odczyt</div>`;
+    right.appendChild(meta);
+    right.appendChild(toggle);
+    bh.appendChild(right);
     mb.appendChild(bh);
 
+    const wrap=document.createElement('div');
+    wrap.className='year-summary-wrap';
     const table=document.createElement('table');
     table.className='year-summary-table';
-    table.style.width = '100%';
     const cg=document.createElement('colgroup');
     const nameCol=document.createElement('col');
-    nameCol.style.width='170px';
+    nameCol.style.width='180px';
     cg.appendChild(nameCol);
-    const compactYearWidth = 92;
-    const useScrollableWideLayout = summaryYears.length > 4;
-    summaryYears.forEach(()=>{
-      const c=document.createElement('col');
-      if(useScrollableWideLayout) c.style.width = `${compactYearWidth}px`;
-      cg.appendChild(c);
-    });
-    const totalCol=document.createElement('col'); totalCol.style.width='118px'; cg.appendChild(totalCol);
-    const statusCol=document.createElement('col'); statusCol.style.width='110px'; cg.appendChild(statusCol);
+    visibleYears.forEach(()=>{ const c=document.createElement('col'); c.style.width = `92px`; cg.appendChild(c); });
+    const totalCol=document.createElement('col'); totalCol.style.width='108px'; cg.appendChild(totalCol);
+    const statusCol=document.createElement('col'); statusCol.style.width='96px'; cg.appendChild(statusCol);
     table.appendChild(cg);
-    if(useScrollableWideLayout){
-      const minW = 170 + (summaryYears.length * compactYearWidth) + 118 + 110;
-      table.style.minWidth = `${minW}px`;
-    }
     const thead=document.createElement('thead');
     const tr1=document.createElement('tr');
-    ['Imię i nazwisko', ...summaryYears.map(String), 'Saldo (całość)', 'Status'].forEach((t,idx)=>{
+    ['Imię i nazwisko', ...visibleYears.map(String), 'Saldo (całość)', 'Status'].forEach((t,idx)=>{
       const th=document.createElement('th');
       th.textContent=t;
       if(idx>0) th.className='sumc';
@@ -3297,7 +3273,7 @@ function normalizeCellValue(val){
       let total = 0;
       const tr=document.createElement('tr');
       const tdN=document.createElement('td'); tdN.className='name'; tdN.innerHTML=`<b>${emp}</b>`; tr.appendChild(tdN);
-      summaryYears.forEach(y=>{
+      visibleYears.forEach(y=>{
         const val = Number((data[y] && data[y][emp]) || 0);
         total += val;
         const td=document.createElement('td'); td.className='sum';
@@ -3312,19 +3288,11 @@ function normalizeCellValue(val){
       tbody.appendChild(tr);
     }
     table.appendChild(tbody);
-    mb.appendChild(table);
+    wrap.appendChild(table);
+    mb.appendChild(wrap);
 
     els.tableWrap.innerHTML='';
     els.tableWrap.appendChild(mb);
-
-    const toggleBtn = document.getElementById('toggleFutureSummaryYearsBtn');
-    if(toggleBtn){
-      toggleBtn.addEventListener('click', ()=>{
-        showFutureSummaryYears = !showFutureSummaryYears;
-        localStorage.setItem(LS_SHOW_FUTURE_SUMMARY_YEARS, showFutureSummaryYears ? '1' : '0');
-        renderPeriodSummary();
-      });
-    }
   }
 
   function buildMonths(){
@@ -3965,19 +3933,18 @@ function normalizeCellValue(val){
       const t = e.target;
       if(!(t && t.matches && t.matches('input[data-visible-emp]'))) return;
       const emp = String(t.getAttribute('data-visible-emp') || '');
-      const current = new Set(visibleEmployees === null ? employees : visibleEmployees);
+      const current = new Set(visibleEmployees.length ? visibleEmployees : employees);
       if(t.checked) current.add(emp); else current.delete(emp);
       const next = employees.filter(name=>current.has(name));
-      if(next.length === employees.length) visibleEmployees = null;
+      if(next.length === employees.length || next.length === 0) visibleEmployees = [];
       else visibleEmployees = next;
       sanitizeVisibleEmployees();
       updateVisibleEmployeesLabel();
       render();
     });
   }
-  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees(null));
+  if(els.visibleEmployeesAllBtn) els.visibleEmployeesAllBtn.addEventListener('click', ()=> setVisibleEmployees([]));
   if(els.visibleEmployeesClearBtn) els.visibleEmployeesClearBtn.addEventListener('click', ()=> setVisibleEmployees([]));
-  if(els.visibleEmployeesCloseBtn) els.visibleEmployeesCloseBtn.addEventListener('click', ()=>{ if(els.visibleEmployeesBox) els.visibleEmployeesBox.removeAttribute('open'); });
   if(els.adminLockYearSel) els.adminLockYearSel.addEventListener('change', (e)=> loadAdminLockYearSettings(e.target.value));
   if(els.adminYearLockChk) els.adminYearLockChk.addEventListener('change', async ()=>{
     if(!isAdmin()) return;
