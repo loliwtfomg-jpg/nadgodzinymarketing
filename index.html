@@ -943,6 +943,8 @@ tr.row-selected-employee .in:focus{
   const TODAY = new Date();
   const TODAY_YEAR = TODAY.getFullYear();
   const TODAY_MONTH = TODAY.getMonth() + 1;
+  const LS_SHOW_FUTURE_SUMMARY_YEARS = 'nadgodziny.showFutureSummaryYears';
+  let showFutureSummaryYears = localStorage.getItem(LS_SHOW_FUTURE_SUMMARY_YEARS) === '1';
   let currentYear = YEARS.includes(TODAY_YEAR) ? TODAY_YEAR : YEARS[0];
   const monthNames = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
   const DB_BASE = `nadgodziny`;
@@ -3237,11 +3239,14 @@ function normalizeCellValue(val){
   }
 
   async function renderPeriodSummary(){
-    els.mainTitle.textContent = `Podsumowanie całego okresu ${YEARS[0]}–${YEARS[YEARS.length-1]}`;
+    const visibleYears = YEARS.filter(y => showFutureSummaryYears || y <= TODAY_YEAR);
+    const summaryYears = visibleYears.length ? visibleYears : [YEARS[0]];
+    const lastVisibleYear = summaryYears[summaryYears.length-1];
+    els.mainTitle.textContent = `Podsumowanie całego okresu ${YEARS[0]}–${lastVisibleYear}`;
     setMonthPreview();
     const loading = document.createElement('div');
     loading.className='monthblock';
-    loading.innerHTML = `<div class="blockhead"><div><b>Podsumowanie całego okresu</b></div><div>ładowanie danych…</div></div><div style="padding:16px;color:var(--muted)">Pobieram salda dla wszystkich lat ${YEARS[0]}–${YEARS[YEARS.length-1]}.</div>`;
+    loading.innerHTML = `<div class="blockhead"><div><b>Podsumowanie całego okresu</b></div><div>ładowanie danych…</div></div><div style="padding:16px;color:var(--muted)">Pobieram salda dla lat ${YEARS[0]}–${lastVisibleYear}.</div>`;
     els.tableWrap.innerHTML='';
     els.tableWrap.appendChild(loading);
 
@@ -3251,7 +3256,7 @@ function normalizeCellValue(val){
     mb.className='monthblock';
     const bh = document.createElement('div');
     bh.className='blockhead';
-    bh.innerHTML = `<div><b>Podsumowanie całego okresu</b> • tylko odczyt</div><div>saldo z lat ${YEARS[0]}–${YEARS[YEARS.length-1]}</div>`;
+    bh.innerHTML = `<div><b>Podsumowanie całego okresu</b> • tylko odczyt</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end"><span>saldo z lat ${YEARS[0]}–${lastVisibleYear}</span><button id="toggleFutureSummaryYearsBtn" type="button" class="btn" style="padding:8px 12px">${showFutureSummaryYears ? 'Ukryj przyszłe lata' : 'Pokaż przyszłe lata'}</button></div>`;
     mb.appendChild(bh);
 
     const table=document.createElement('table');
@@ -3260,14 +3265,14 @@ function normalizeCellValue(val){
     const nameCol=document.createElement('col');
     nameCol.style.width='170px';
     cg.appendChild(nameCol);
-    const yearColWidth = Math.max(72, Math.floor((window.innerWidth - 420) / YEARS.length));
-    YEARS.forEach(()=>{ const c=document.createElement('col'); c.style.width = `${yearColWidth}px`; cg.appendChild(c); });
+    const yearColWidth = Math.max(72, Math.floor((window.innerWidth - 420) / summaryYears.length));
+    summaryYears.forEach(()=>{ const c=document.createElement('col'); c.style.width = `${yearColWidth}px`; cg.appendChild(c); });
     const totalCol=document.createElement('col'); totalCol.style.width='120px'; cg.appendChild(totalCol);
     const statusCol=document.createElement('col'); statusCol.style.width='110px'; cg.appendChild(statusCol);
     table.appendChild(cg);
     const thead=document.createElement('thead');
     const tr1=document.createElement('tr');
-    ['Imię i nazwisko', ...YEARS.map(String), 'Saldo (całość)', 'Status'].forEach((t,idx)=>{
+    ['Imię i nazwisko', ...summaryYears.map(String), 'Saldo (całość)', 'Status'].forEach((t,idx)=>{
       const th=document.createElement('th');
       th.textContent=t;
       if(idx>0) th.className='sumc';
@@ -3281,7 +3286,7 @@ function normalizeCellValue(val){
       let total = 0;
       const tr=document.createElement('tr');
       const tdN=document.createElement('td'); tdN.className='name'; tdN.innerHTML=`<b>${emp}</b>`; tr.appendChild(tdN);
-      YEARS.forEach(y=>{
+      summaryYears.forEach(y=>{
         const val = Number((data[y] && data[y][emp]) || 0);
         total += val;
         const td=document.createElement('td'); td.className='sum';
@@ -3300,6 +3305,15 @@ function normalizeCellValue(val){
 
     els.tableWrap.innerHTML='';
     els.tableWrap.appendChild(mb);
+
+    const toggleBtn = document.getElementById('toggleFutureSummaryYearsBtn');
+    if(toggleBtn){
+      toggleBtn.addEventListener('click', ()=>{
+        showFutureSummaryYears = !showFutureSummaryYears;
+        localStorage.setItem(LS_SHOW_FUTURE_SUMMARY_YEARS, showFutureSummaryYears ? '1' : '0');
+        renderPeriodSummary();
+      });
+    }
   }
 
   function buildMonths(){
